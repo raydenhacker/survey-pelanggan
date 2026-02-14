@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Generator Laporan WiFi</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body { font-family: sans-serif; padding: 20px; line-height: 1.6; }
+        input, select, textarea { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        button { width: 100%; padding: 15px; background-color: #25D366; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; }
+        button:hover { background-color: #128C7E; }
+    </style>
+</head>
+<body>
+    <h2>Form Laporan WiFi</h2>
+    <input type="text" id="nama" placeholder="Nama Pelanggan">
+    <textarea id="alamat" placeholder="Alamat Lengkap"></textarea>
+    <input type="text" id="map" placeholder="Link Google Maps">
+    <input type="text" id="wifi" placeholder="Nama SSID WiFi">
+    <input type="text" id="sandi" placeholder="Password WiFi">
+    <select id="paket">
+        <option value="">-- Pilih Paket --</option>
+        <option value="20 Mbps">20 Mbps</option>
+        <option value="50 Mbps">50 Mbps</option>
+        <option value="100 Mbps">100 Mbps</option>
+    </select>
+    <button onclick="kirimWA()">KIRIM KE WHATSAPP</button>
+
+    <script>
+        function kirimWA() {
+            const nama = document.getElementById('nama').value;
+            const alamat = document.getElementById('alamat').value;
+            const map = document.getElementById('map').value;
+            const wifi = document.getElementById('wifi').value;
+            const sandi = document.getElementById('sandi').value;
+            const paket = document.getElementById('paket').value;
+
+            const text = `*DATA PEMASANGAN WIFI*%0A%0A` +
+                         `*Nama:* ${nama}%0A` +
+                         `*Alamat:* ${alamat}%0A` +
+                         `*Maps:* ${map}%0A` +
+                         `*Nama SSID:* ${wifi}%0A` +
+                         `*Password:* ${sandi}%0A` +
+                         `*Paket:* ${paket}%0A%0A` +
+                         `_Laporan selesai diinput._`;
+
+            window.location.href = `https://wa.me/?text=${text}`;
+        }
+    </script>
+</body>
+</html>
