@@ -14,14 +14,17 @@
     <h2>Form Laporan WiFi</h2>
     <input type="text" id="nama" placeholder="Nama Pelanggan">
     <textarea id="alamat" placeholder="Alamat Lengkap"></textarea>
-    <input type="text" id="map" placeholder="Link Google Maps">
-    <input type="text" id="wifi" placeholder="Nama SSID WiFi">
+    <input type="text" id="map" placeholder="Link Googl Maps">
+    <input type="text" id="wifi" placeholder="Nama WiFi">
     <input type="text" id="sandi" placeholder="Password WiFi">
     <select id="paket">
         <option value="">-- Pilih Paket --</option>
-        <option value="20 Mbps">20 Mbps</option>
-        <option value="50 Mbps">50 Mbps</option>
-        <option value="100 Mbps">100 Mbps</option>
+        <option value="Lite 130k">Lite 130k</option>
+        <option value="Basic 175k">Basic 175k</option>
+        <option value="Pro 220k">Pro 220k</option>
+        <option value="Combo TV 250k">Combo TV 250k</option>
+        <option value="Gamers 315k">Gamers 315k</option>
+        <option value="Fun 510k">Fun 510k</option>
     </select>
     <button onclick="kirimWA()">KIRIM KE WHATSAPP</button>
 
@@ -38,10 +41,9 @@
                          `*Nama:* ${nama}%0A` +
                          `*Alamat:* ${alamat}%0A` +
                          `*Maps:* ${map}%0A` +
-                         `*Nama SSID:* ${wifi}%0A` +
-                         `*Password:* ${sandi}%0A` +
-                         `*Paket:* ${paket}%0A%0A` +
-                         `_Laporan selesai diinput._`;
+                         `*Paket:* ${paket}%0A` +
+                         `*Nama WiFi:* ${wifi}%0A` +
+                         `*Sandi WiFi:* ${sandi}%0A` ;
 
             window.location.href = `https://wa.me/?text=${text}`;
         }
