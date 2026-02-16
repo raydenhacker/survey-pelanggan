@@ -3,80 +3,136 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Survey WiFi - Pelanggan Baru</title>
+    <title>Survey WiFi - Satelit Mode</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     
     <style>
-        body { font-family: sans-serif; padding: 20px; line-height: 1.6; max-width: 600px; margin: auto; background-color: #f4f4f9; }
-        .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        h2 { color: #333; text-align: center; margin-top: 0; }
+        :root {
+            --primary-color: #25D366;
+            --secondary-color: #128C7E;
+            --bg-color: #e5ddd5;
+        }
+
+        body { 
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+            padding: 15px; 
+            line-height: 1.4; 
+            max-width: 500px; 
+            margin: auto; 
+            background-color: var(--bg-color); 
+        }
+
+        .card { 
+            background: white; 
+            padding: 20px; 
+            border-radius: 15px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1); 
+        }
+
+        h2 { color: #075E54; text-align: center; margin-bottom: 20px; font-size: 1.5rem; }
         
-        label { font-weight: bold; display: block; margin-top: 10px; color: #555; }
-        input, select, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; font-size: 14px; }
+        label { font-weight: bold; display: block; margin-top: 15px; color: #444; font-size: 0.9rem; }
         
-        /* Container Peta & Tombol Lokasi */
-        .map-wrapper { position: relative; margin: 10px 0; }
-        #map-canvas { height: 300px; width: 100%; border-radius: 5px; border: 2px solid #ddd; z-index: 1; }
+        input, select, textarea { 
+            width: 100%; padding: 12px; margin: 8px 0; 
+            border: 1px solid #ddd; border-radius: 8px; 
+            box-sizing: border-box; font-size: 16px; /* 16px mencegah auto-zoom di iPhone */
+        }
+        
+        /* Container Peta */
+        .map-wrapper { 
+            position: relative; 
+            margin: 15px 0; 
+            border-radius: 12px; 
+            overflow: hidden; 
+            border: 2px solid #fff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        
+        #map-canvas { height: 350px; width: 100%; z-index: 1; }
         
         /* Tombol Lokasi Saya */
         .btn-locate { 
             position: absolute; top: 10px; right: 10px; z-index: 1000; 
-            background: white; border: 2px solid rgba(0,0,0,0.2); border-radius: 4px;
-            padding: 8px; cursor: pointer; font-size: 20px; line-height: 1;
+            background: white; border: none; border-radius: 50%;
+            width: 45px; height: 45px; cursor: pointer; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 22px;
         }
-        .btn-locate:hover { background: #f4f4f4; }
 
-        .hint { font-size: 0.85em; color: #d9534f; margin-bottom: 15px; font-style: italic; }
+        .hint { font-size: 0.8rem; color: #777; margin-bottom: 10px; text-align: center; }
         
-        button.btn-kirim { width: 100%; padding: 15px; background-color: #25D366; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 16px; transition: 0.3s; }
-        button.btn-kirim:hover { background-color: #128C7E; }
+        .btn-kirim { 
+            width: 100%; padding: 16px; background-color: var(--primary-color); 
+            color: white; border: none; border-radius: 10px; 
+            font-weight: bold; cursor: pointer; font-size: 17px; 
+            margin-top: 20px; box-shadow: 0 4px 10px rgba(37, 211, 102, 0.3);
+        }
+        
+        .btn-kirim:hover { background-color: var(--secondary-color); }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h2>Calon Pelanggan WiFi</h2>
+    <h2>Data Pemasangan</h2>
     
-    <input type="text" id="nama" placeholder="Nama Lengkap Pelanggan">
-    <textarea id="alamat" placeholder="Alamat Lengkap"></textarea>
+    <input type="text" id="nama" placeholder="Nama Pelanggan">
+    <textarea id="alamat" rows="2" placeholder="Alamat Lengkap / Patokan"></textarea>
     
-    <label>Titik Lokasi</label>
+    <label>Titik Lokasi (Satelit)</label>
     <div class="map-wrapper">
         <div id="map-canvas"></div>
-        <div class="btn-locate" onclick="getLocation()" title="Cari Lokasi Saya">📍</div>
+        <button class="btn-locate" onclick="getLocation()" title="Cari Lokasi Saya">🎯</button>
     </div>
-    <p class="hint">*Ketuk peta atau klik ikon 📍 untuk GPS otomatis</p>
+    <p class="hint">Klik peta atau ikon 🎯 untuk koordinat presisi</p>
     
-    <input type="text" id="map-link" placeholder="Link Google Maps Otomatis" readonly style="background: #eee;">
+    <input type="text" id="map-link" placeholder="Link Google Maps (Otomatis)" readonly style="background: #f9f9f9; font-size: 12px; color: #666;">
     
-    <input type="text" id="wifi" placeholder="Nama WiFi (SSID)">
-    <input type="text" id="sandi" placeholder="Sandi WiFi">
-    
+    <label>Paket & WiFi</label>
     <select id="paket">
         <option value="">-- Pilih Paket --</option>
         <option value="Lite 130k">Lite 130k</option>
         <option value="Basic 175k">Basic 175k</option>
         <option value="Pro 220k">Pro 220k</option>
         <option value="Combo TV 250k">Combo TV 250k</option>
-        <option value="Gamers 315k">Gamers 315k</option>
-        <option value="Fun 510k">Fun 510k</option>
     </select>
     
-    <button class="btn-kirim" onclick="kirimWA()">KIRIM KE WHATSAPP GROUP</button>
+    <input type="text" id="wifi" placeholder="Nama WiFi">
+    <input type="text" id="sandi" placeholder="Sandi WiFi">
+    
+    <button class="btn-kirim" onclick="kirimWA()">KIRIM KE WHATSAPP</button>
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
+    // 1. Inisialisasi Peta
     const map = L.map('map-canvas').setView([-6.2000, 106.8166], 13);
     let marker;
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap'
-    }).addTo(map);
+    // 2. Definisi Layer (Jalan & Satelit)
+    const streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap'
+    });
 
-    // Fungsi Update Marker & Input
+    const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+        attribution: 'Tiles &copy; Esri'
+    });
+
+    // Gunakan Satelit sebagai default
+    satelliteLayer.addTo(map);
+
+    // Tambahkan kontrol pilihan layer (Pojok Kiri Bawah agar tidak tertutup tombol GPS)
+    const baseMaps = {
+        "Satelit": satelliteLayer,
+        "Jalan": streetLayer
+    };
+    L.control.layers(baseMaps, null, {position: 'bottomleft'}).addTo(map);
+
+    // 3. Fungsi Update Marker
     function updateLocation(lat, lng) {
         const latlng = [lat, lng];
         if (marker) {
@@ -84,55 +140,52 @@
         } else {
             marker = L.marker(latlng).addTo(map);
         }
-        map.setView(latlng, 16); // Zoom lebih dekat saat lokasi ditemukan
+        map.setView(latlng, 18); // Zoom sangat dekat untuk satelit
         document.getElementById("map-link").value = `https://www.google.com/maps?q=${lat},${lng}`;
     }
 
-    // Klik Manual pada Peta
+    // Klik pada peta
     map.on('click', function(e) {
         updateLocation(e.latlng.lat, e.latlng.lng);
     });
 
-    // Fungsi Deteksi GPS Otomatis
+    // Deteksi GPS
     function getLocation() {
         if (navigator.geolocation) {
-            alert("Sedang mencari lokasi... Pastikan GPS HP Anda aktif.");
             navigator.geolocation.getCurrentPosition(
                 (position) => {
                     updateLocation(position.coords.latitude, position.coords.longitude);
                 },
-                (error) => {
-                    alert("Gagal mendeteksi lokasi. Pastikan Anda memberi izin akses lokasi di browser.");
-                },
-                { enableHighAccuracy: true } // Memaksa penggunaan GPS agar akurat
+                () => { alert("Izin lokasi ditolak atau GPS tidak aktif."); },
+                { enableHighAccuracy: true }
             );
-        } else {
-            alert("Browser Anda tidak mendukung fitur lokasi.");
         }
     }
 
+    // 4. Kirim WA
     function kirimWA() {
         const nama = document.getElementById('nama').value;
         const alamat = document.getElementById('alamat').value;
         const mapLink = document.getElementById('map-link').value;
+        const paket = document.getElementById('paket').value;
         const wifi = document.getElementById('wifi').value;
         const sandi = document.getElementById('sandi').value;
-        const paket = document.getElementById('paket').value;
 
         if (!nama || !mapLink) {
-            alert("Mohon isi Nama dan Titik Lokasi!");
+            alert("Nama dan Titik Lokasi wajib diisi!");
             return;
         }
 
-        const text = `*DATA PEMASANGAN WIFI*%0A%0A` +
-                     `*Nama:* ${nama}%0A` +
-                     `*Alamat:* ${alamat}%0A` +
-                     `*Maps:* ${mapLink}%0A` +
-                     `*Paket:* ${paket}%0A` +
-                     `*Nama WiFi:* ${wifi}%0A` +
-                     `*Sandi WiFi:* ${sandi}%0A`;
+        const pesan = `*DATA PEMASANGAN WIFI*%0A%0A` +
+                      `*Nama:* ${nama}%0A` +
+                      `*Alamat:* ${alamat}%0A` +
+                      `*Maps:* ${mapLink}%0A` +
+                      `*Paket:* ${paket}%0A` +
+                      `*WiFi:* ${wifi}%0A` +
+                      `*Sandi:* ${sandi}`;
 
-        window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank');
+        // Membuka daftar chat/grup WhatsApp
+        window.open(`https://api.whatsapp.com/send?text=${pesan}`, '_blank');
     }
 </script>
 
