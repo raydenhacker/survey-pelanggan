@@ -15,12 +15,22 @@
         label { font-weight: bold; display: block; margin-top: 10px; color: #555; }
         input, select, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; font-size: 14px; }
         
-        /* Style untuk Peta */
-        #map-canvas { height: 300px; width: 100%; border-radius: 5px; margin: 10px 0; border: 2px solid #ddd; z-index: 1; }
+        /* Container Peta & Tombol Lokasi */
+        .map-wrapper { position: relative; margin: 10px 0; }
+        #map-canvas { height: 300px; width: 100%; border-radius: 5px; border: 2px solid #ddd; z-index: 1; }
+        
+        /* Tombol Lokasi Saya */
+        .btn-locate { 
+            position: absolute; top: 10px; right: 10px; z-index: 1000; 
+            background: white; border: 2px solid rgba(0,0,0,0.2); border-radius: 4px;
+            padding: 8px; cursor: pointer; font-size: 20px; line-height: 1;
+        }
+        .btn-locate:hover { background: #f4f4f4; }
+
         .hint { font-size: 0.85em; color: #d9534f; margin-bottom: 15px; font-style: italic; }
         
-        button { width: 100%; padding: 15px; background-color: #25D366; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 16px; transition: 0.3s; }
-        button:hover { background-color: #128C7E; }
+        button.btn-kirim { width: 100%; padding: 15px; background-color: #25D366; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 16px; transition: 0.3s; }
+        button.btn-kirim:hover { background-color: #128C7E; }
     </style>
 </head>
 <body>
@@ -28,21 +38,21 @@
 <div class="card">
     <h2>Calon Pelanggan WiFi</h2>
     
-    <label>Data Diri</label>
     <input type="text" id="nama" placeholder="Nama Lengkap Pelanggan">
-    <textarea id="alamat" placeholder="Alamat Lengkap (Patokan rumah)"></textarea>
+    <textarea id="alamat" placeholder="Alamat Lengkap"></textarea>
     
-    <label>Lokasi (Klik pada Peta)</label>
-    <div id="map-canvas"></div>
-    <p class="hint">*Ketuk pada posisi rumah pelanggan di peta</p>
+    <label>Titik Lokasi</label>
+    <div class="map-wrapper">
+        <div id="map-canvas"></div>
+        <div class="btn-locate" onclick="getLocation()" title="Cari Lokasi Saya">📍</div>
+    </div>
+    <p class="hint">*Ketuk peta atau klik ikon 📍 untuk GPS otomatis</p>
     
     <input type="text" id="map-link" placeholder="Link Google Maps Otomatis" readonly style="background: #eee;">
     
-    <label>Konfigurasi WiFi</label>
-    <input type="text" id="wifi" placeholder="Nama WiFi (SSID) yang Diinginkan">
-    <input type="text" id="sandi" placeholder="Sandi/Password WiFi">
+    <input type="text" id="wifi" placeholder="Nama WiFi (SSID)">
+    <input type="text" id="sandi" placeholder="Sandi WiFi">
     
-    <label>Pilihan Layanan</label>
     <select id="paket">
         <option value="">-- Pilih Paket --</option>
         <option value="Lite 130k">Lite 130k</option>
@@ -53,38 +63,54 @@
         <option value="Fun 510k">Fun 510k</option>
     </select>
     
-    <button onclick="kirimWA()">KIRIM KE WHATSAPP GROUP</button>
+    <button class="btn-kirim" onclick="kirimWA()">KIRIM KE WHATSAPP GROUP</button>
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
-    // 1. Inisialisasi Peta (Default Jakarta)
     const map = L.map('map-canvas').setView([-6.2000, 106.8166], 13);
     let marker;
 
-    // 2. Load Lapisan Peta OpenStreetMap
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap contributors'
+        attribution: '© OpenStreetMap'
     }).addTo(map);
 
-    // 3. Fungsi saat peta diklik
-    map.on('click', function(e) {
-        const { lat, lng } = e.latlng;
-        
-        // Pindahkan atau buat marker baru
+    // Fungsi Update Marker & Input
+    function updateLocation(lat, lng) {
+        const latlng = [lat, lng];
         if (marker) {
-            marker.setLatLng(e.latlng);
+            marker.setLatLng(latlng);
         } else {
-            marker = L.marker(e.latlng).addTo(map);
+            marker = L.marker(latlng).addTo(map);
         }
+        map.setView(latlng, 16); // Zoom lebih dekat saat lokasi ditemukan
+        document.getElementById("map-link").value = `https://www.google.com/maps?q=${lat},${lng}`;
+    }
 
-        // Buat URL Google Maps dari koordinat Leaflet
-        const googleUrl = `https://www.google.com/maps?q=${lat},${lng}`;
-        document.getElementById("map-link").value = googleUrl;
+    // Klik Manual pada Peta
+    map.on('click', function(e) {
+        updateLocation(e.latlng.lat, e.latlng.lng);
     });
 
-    // 4. Fungsi Kirim Data
+    // Fungsi Deteksi GPS Otomatis
+    function getLocation() {
+        if (navigator.geolocation) {
+            alert("Sedang mencari lokasi... Pastikan GPS HP Anda aktif.");
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    updateLocation(position.coords.latitude, position.coords.longitude);
+                },
+                (error) => {
+                    alert("Gagal mendeteksi lokasi. Pastikan Anda memberi izin akses lokasi di browser.");
+                },
+                { enableHighAccuracy: true } // Memaksa penggunaan GPS agar akurat
+            );
+        } else {
+            alert("Browser Anda tidak mendukung fitur lokasi.");
+        }
+    }
+
     function kirimWA() {
         const nama = document.getElementById('nama').value;
         const alamat = document.getElementById('alamat').value;
@@ -93,9 +119,8 @@
         const sandi = document.getElementById('sandi').value;
         const paket = document.getElementById('paket').value;
 
-        // Validasi minimal
         if (!nama || !mapLink) {
-            alert("Mohon isi Nama dan Pilih Lokasi di Peta!");
+            alert("Mohon isi Nama dan Titik Lokasi!");
             return;
         }
 
@@ -107,10 +132,7 @@
                      `*Nama WiFi:* ${wifi}%0A` +
                      `*Sandi WiFi:* ${sandi}%0A`;
 
-        // Menggunakan api.whatsapp.com agar user bisa memilih GRUP setelah klik kirim
-        const waUrl = `https://api.whatsapp.com/send?text=${text}`;
-        
-        window.open(waUrl, '_blank');
+        window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank');
     }
 </script>
 
