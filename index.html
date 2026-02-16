@@ -3,10 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Survey WiFi - Satelit Mode</title>
-    
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    
+    <title>Survey WiFi - Paste Coordinator</title>
     <style>
         :root {
             --primary-color: #25D366;
@@ -37,38 +34,43 @@
         input, select, textarea { 
             width: 100%; padding: 12px; margin: 8px 0; 
             border: 1px solid #ddd; border-radius: 8px; 
-            box-sizing: border-box; font-size: 16px; /* 16px mencegah auto-zoom di iPhone */
-        }
-        
-        /* Container Peta */
-        .map-wrapper { 
-            position: relative; 
-            margin: 15px 0; 
-            border-radius: 12px; 
-            overflow: hidden; 
-            border: 2px solid #fff;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-        }
-        
-        #map-canvas { height: 350px; width: 100%; z-index: 1; }
-        
-        /* Tombol Lokasi Saya */
-        .btn-locate { 
-            position: absolute; top: 10px; right: 10px; z-index: 1000; 
-            background: white; border: none; border-radius: 50%;
-            width: 45px; height: 45px; cursor: pointer; 
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-            display: flex; align-items: center; justify-content: center;
-            font-size: 22px;
+            box-sizing: border-box; font-size: 16px;
         }
 
-        .hint { font-size: 0.8rem; color: #777; margin-bottom: 10px; text-align: center; }
+        /* Container untuk Input Maps + Tombol Paste */
+        .input-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .input-group input {
+            flex: 1; /* Input mengambil sisa ruang */
+            margin: 0;
+            background-color: #f9f9f9;
+        }
+
+        .btn-paste {
+            padding: 12px 15px;
+            background-color: #34b7f1;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            white-space: nowrap;
+            transition: 0.3s;
+        }
+
+        .btn-paste:hover { background-color: #0d95e8; }
+
+        .hint { font-size: 0.75rem; color: #777; margin-top: 5px; font-style: italic; }
         
         .btn-kirim { 
             width: 100%; padding: 16px; background-color: var(--primary-color); 
             color: white; border: none; border-radius: 10px; 
             font-weight: bold; cursor: pointer; font-size: 17px; 
-            margin-top: 20px; box-shadow: 0 4px 10px rgba(37, 211, 102, 0.3);
+            margin-top: 25px; box-shadow: 0 4px 10px rgba(37, 211, 102, 0.3);
         }
         
         .btn-kirim:hover { background-color: var(--secondary-color); }
@@ -82,14 +84,12 @@
     <input type="text" id="nama" placeholder="Nama Pelanggan">
     <textarea id="alamat" rows="2" placeholder="Alamat Lengkap / Patokan"></textarea>
     
-    <label>Titik Lokasi (Satelit)</label>
-    <div class="map-wrapper">
-        <div id="map-canvas"></div>
-        <button class="btn-locate" onclick="getLocation()" title="Cari Lokasi Saya">🎯</button>
+    <label>Link / Koordinat Maps</label>
+    <div class="input-group">
+        <input type="text" id="map-link" placeholder="Paste koordinat di sini..." readonly>
+        <button type="button" class="btn-paste" onclick="pasteCoordinates()">PASTE</button>
     </div>
-    <p class="hint">Klik peta atau ikon 🎯 untuk koordinat presisi</p>
-    
-    <input type="text" id="map-link" placeholder="Link Google Maps (Otomatis)" readonly style="background: #f9f9f9; font-size: 12px; color: #666;">
+    <p class="hint">*Copy koordinat dari Google Maps, lalu tekan tombol PASTE</p>
     
     <label>Paket & WiFi</label>
     <select id="paket">
@@ -106,63 +106,33 @@
     <button class="btn-kirim" onclick="kirimWA()">KIRIM KE WHATSAPP</button>
 </div>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
 <script>
-    // 1. Inisialisasi Peta
-    const map = L.map('map-canvas').setView([-6.2000, 106.8166], 13);
-    let marker;
+    async function pasteCoordinates() {
+        try {
+            // Meminta izin dan mengambil teks dari clipboard
+            const text = await navigator.clipboard.readText();
+            
+            // Logika untuk membersihkan teks (menghilangkan spasi berlebih atau karakter aneh)
+            // Mendeteksi angka koordinat (lat, lng)
+            const coordRegex = /(-?\d+\.\d+),\s*(-?\d+\.\d+)/;
+            const match = text.match(coordRegex);
 
-    // 2. Definisi Layer (Jalan & Satelit)
-    const streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap'
-    });
-
-    const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-        attribution: 'Tiles &copy; Esri'
-    });
-
-    // Gunakan Satelit sebagai default
-    satelliteLayer.addTo(map);
-
-    // Tambahkan kontrol pilihan layer (Pojok Kiri Bawah agar tidak tertutup tombol GPS)
-    const baseMaps = {
-        "Satelit": satelliteLayer,
-        "Jalan": streetLayer
-    };
-    L.control.layers(baseMaps, null, {position: 'bottomleft'}).addTo(map);
-
-    // 3. Fungsi Update Marker
-    function updateLocation(lat, lng) {
-        const latlng = [lat, lng];
-        if (marker) {
-            marker.setLatLng(latlng);
-        } else {
-            marker = L.marker(latlng).addTo(map);
-        }
-        map.setView(latlng, 18); // Zoom sangat dekat untuk satelit
-        document.getElementById("map-link").value = `https://www.google.com/maps?q=${lat},${lng}`;
-    }
-
-    // Klik pada peta
-    map.on('click', function(e) {
-        updateLocation(e.latlng.lat, e.latlng.lng);
-    });
-
-    // Deteksi GPS
-    function getLocation() {
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    updateLocation(position.coords.latitude, position.coords.longitude);
-                },
-                () => { alert("Izin lokasi ditolak atau GPS tidak aktif."); },
-                { enableHighAccuracy: true }
-            );
+            if (match) {
+                const lat = match[1];
+                const lng = match[2];
+                // Mengubah menjadi URL Google Maps yang valid
+                const formattedUrl = `https://www.google.com/maps?q=${lat},${lng}`;
+                document.getElementById("map-link").value = formattedUrl;
+            } else {
+                // Jika teks yang di-paste bukan koordinat murni, masukkan apa adanya
+                // (Mungkin user paste link lengkap)
+                document.getElementById("map-link").value = text;
+            }
+        } catch (err) {
+            alert("Gagal mengakses clipboard. Pastikan Anda mengizinkan akses atau gunakan browser modern.");
         }
     }
 
-    // 4. Kirim WA
     function kirimWA() {
         const nama = document.getElementById('nama').value;
         const alamat = document.getElementById('alamat').value;
@@ -172,7 +142,7 @@
         const sandi = document.getElementById('sandi').value;
 
         if (!nama || !mapLink) {
-            alert("Nama dan Titik Lokasi wajib diisi!");
+            alert("Nama dan Link Maps wajib diisi!");
             return;
         }
 
@@ -184,7 +154,6 @@
                       `*WiFi:* ${wifi}%0A` +
                       `*Sandi:* ${sandi}`;
 
-        // Membuka daftar chat/grup WhatsApp
         window.open(`https://api.whatsapp.com/send?text=${pesan}`, '_blank');
     }
 </script>
