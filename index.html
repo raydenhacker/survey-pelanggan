@@ -1,35 +1,48 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
-    <title>Survey WiFi</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Survey WiFi - Pelanggan Baru</title>
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
     <style>
-        body { font-family: sans-serif; padding: 20px; line-height: 1.6; max-width: 600px; margin: auto; }
-        input, select, textarea { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        body { font-family: sans-serif; padding: 20px; line-height: 1.6; max-width: 600px; margin: auto; background-color: #f4f4f9; }
+        .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h2 { color: #333; text-align: center; margin-top: 0; }
         
-        /* Gaya untuk Peta */
-        #map-canvas { height: 300px; width: 100%; border-radius: 5px; margin: 10px 0; border: 1px solid #ddd; }
+        label { font-weight: bold; display: block; margin-top: 10px; color: #555; }
+        input, select, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; font-size: 14px; }
         
-        button { width: 100%; padding: 15px; background-color: #25D366; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; }
+        /* Style untuk Peta */
+        #map-canvas { height: 300px; width: 100%; border-radius: 5px; margin: 10px 0; border: 2px solid #ddd; z-index: 1; }
+        .hint { font-size: 0.85em; color: #d9534f; margin-bottom: 15px; font-style: italic; }
+        
+        button { width: 100%; padding: 15px; background-color: #25D366; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 16px; transition: 0.3s; }
         button:hover { background-color: #128C7E; }
-        .hint { font-size: 0.8em; color: #666; margin-top: -5px; }
     </style>
 </head>
 <body>
+
+<div class="card">
     <h2>Calon Pelanggan WiFi</h2>
     
-    <input type="text" id="nama" placeholder="Nama Pelanggan">
-    <textarea id="alamat" placeholder="Alamat Lengkap"></textarea>
+    <label>Data Diri</label>
+    <input type="text" id="nama" placeholder="Nama Lengkap Pelanggan">
+    <textarea id="alamat" placeholder="Alamat Lengkap (Patokan rumah)"></textarea>
     
-    <label>Pilih Lokasi di Peta:</label>
+    <label>Lokasi (Klik pada Peta)</label>
     <div id="map-canvas"></div>
-    <p class="hint">*Klik pada peta untuk menandai lokasi rumah</p>
+    <p class="hint">*Ketuk pada posisi rumah pelanggan di peta</p>
     
-    <input type="text" id="map-link" placeholder="Link Google Maps (Otomatis)" readonly>
+    <input type="text" id="map-link" placeholder="Link Google Maps Otomatis" readonly style="background: #eee;">
     
-    <input type="text" id="wifi" placeholder="Nama WiFi (SSID)">
-    <input type="text" id="sandi" placeholder="Sandi WiFi">
+    <label>Konfigurasi WiFi</label>
+    <input type="text" id="wifi" placeholder="Nama WiFi (SSID) yang Diinginkan">
+    <input type="text" id="sandi" placeholder="Sandi/Password WiFi">
     
+    <label>Pilihan Layanan</label>
     <select id="paket">
         <option value="">-- Pilih Paket --</option>
         <option value="Lite 130k">Lite 130k</option>
@@ -40,73 +53,66 @@
         <option value="Fun 510k">Fun 510k</option>
     </select>
     
-    <button onclick="kirimWA()">KIRIM KE WHATSAPP</button>
+    <button onclick="kirimWA()">KIRIM KE WHATSAPP GROUP</button>
+</div>
 
-    <script async src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-    <script>
-        let map;
-        let marker;
+<script>
+    // 1. Inisialisasi Peta (Default Jakarta)
+    const map = L.map('map-canvas').setView([-6.2000, 106.8166], 13);
+    let marker;
 
-        function initMap() {
-            // Koordinat default (Pusat Indonesia atau lokasi kantor Anda)
-            const defaultLoc = { lat: -6.2000, lng: 106.8166 };
-            
-            map = new google.maps.Map(document.getElementById("map-canvas"), {
-                zoom: 13,
-                center: defaultLoc,
-            });
+    // 2. Load Lapisan Peta OpenStreetMap
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
 
-            // Klik peta untuk ambil koordinat
-            map.addListener("click", (event) => {
-                addMarker(event.latLng);
-            });
+    // 3. Fungsi saat peta diklik
+    map.on('click', function(e) {
+        const { lat, lng } = e.latlng;
+        
+        // Pindahkan atau buat marker baru
+        if (marker) {
+            marker.setLatLng(e.latlng);
+        } else {
+            marker = L.marker(e.latlng).addTo(map);
         }
 
-        function addMarker(location) {
-            // Hapus marker lama jika ada
-            if (marker) marker.setMap(null);
+        // Buat URL Google Maps dari koordinat Leaflet
+        const googleUrl = `https://www.google.com/maps?q=${lat},${lng}`;
+        document.getElementById("map-link").value = googleUrl;
+    });
 
-            marker = new google.maps.Marker({
-                position: location,
-                map: map,
-                animation: google.maps.Animation.DROP
-            });
+    // 4. Fungsi Kirim Data
+    function kirimWA() {
+        const nama = document.getElementById('nama').value;
+        const alamat = document.getElementById('alamat').value;
+        const mapLink = document.getElementById('map-link').value;
+        const wifi = document.getElementById('wifi').value;
+        const sandi = document.getElementById('sandi').value;
+        const paket = document.getElementById('paket').value;
 
-            // Buat URL Google Maps
-            const lat = location.lat();
-            const lng = location.lng();
-            const url = `https://www.google.com/maps?q=${lat},${lng}`;
-            
-            // Masukkan ke input teks
-            document.getElementById("map-link").value = url;
+        // Validasi minimal
+        if (!nama || !mapLink) {
+            alert("Mohon isi Nama dan Pilih Lokasi di Peta!");
+            return;
         }
 
-        function kirimWA() {
-            const nama = document.getElementById('nama').value;
-            const alamat = document.getElementById('alamat').value;
-            const mapLink = document.getElementById('map-link').value;
-            const wifi = document.getElementById('wifi').value;
-            const sandi = document.getElementById('sandi').value;
-            const paket = document.getElementById('paket').value;
+        const text = `*DATA PEMASANGAN WIFI*%0A%0A` +
+                     `*Nama:* ${nama}%0A` +
+                     `*Alamat:* ${alamat}%0A` +
+                     `*Maps:* ${mapLink}%0A` +
+                     `*Paket:* ${paket}%0A` +
+                     `*Nama WiFi:* ${wifi}%0A` +
+                     `*Sandi WiFi:* ${sandi}%0A`;
 
-            if(!mapLink) {
-                alert("Silakan pilih lokasi di peta terlebih dahulu!");
-                return;
-            }
+        // Menggunakan api.whatsapp.com agar user bisa memilih GRUP setelah klik kirim
+        const waUrl = `https://api.whatsapp.com/send?text=${text}`;
+        
+        window.open(waUrl, '_blank');
+    }
+</script>
 
-            const text = `*DATA PEMASANGAN WIFI*%0A%0A` +
-                         `*Nama:* ${nama}%0A` +
-                         `*Alamat:* ${alamat}%0A` +
-                         `*Maps:* ${mapLink}%0A` +
-                         `*Paket:* ${paket}%0A` +
-                         `*Nama WiFi:* ${wifi}%0A` +
-                         `*Sandi WiFi:* ${sandi}%0A` ;
-
-            // Ganti nomor di bawah dengan nomor WhatsApp tujuan (gunakan kode negara 62)
-            const nomorWA = "628123456789";
-window.location.href = `https://api.whatsapp.com/send?text=${text}`;
-}
-    </script>
 </body>
 </html>
