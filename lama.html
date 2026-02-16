@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Survey WiFi</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body { font-family: sans-serif; padding: 20px; line-height: 1.6; }
+        input, select, textarea { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        button { width: 100%; padding: 15px; background-color: #25D366; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; }
+        button:hover { background-color: #128C7E; }
+    </style>
+</head>
+<body>
+    <h2>Calon Pelanggan WiFi</h2>
+    <input type="text" id="nama" placeholder="Nama Pelanggan">
+    <textarea id="alamat" placeholder="Alamat Lengkap"></textarea>
+    <input type="text" id="map" placeholder="Link Google Maps">
+    <input type="text" id="wifi" placeholder="Nama WiFi">
+    <input type="text" id="sandi" placeholder="Sandi WiFi">
+    <select id="paket">
+        <option value="">-- Pilih Paket --</option>
+        <option value="Lite 130k">Lite 130k</option>
+        <option value="Basic 175k">Basic 175k</option>
+        <option value="Pro 220k">Pro 220k</option>
+        <option value="Combo TV 250k">Combo TV 250k</option>
+        <option value="Gamers 315k">Gamers 315k</option>
+        <option value="Fun 510k">Fun 510k</option>
+    </select>
+    <button onclick="kirimWA()">KIRIM KE WHATSAPP</button>
+
+    <script>
+        function kirimWA() {
+            const nama = document.getElementById('nama').value;
+            const alamat = document.getElementById('alamat').value;
+            const map = document.getElementById('map').value;
+            const wifi = document.getElementById('wifi').value;
+            const sandi = document.getElementById('sandi').value;
+            const paket = document.getElementById('paket').value;
+
+            const text = `*DATA PEMASANGAN WIFI*%0A%0A` +
+                         `*Nama:* ${nama}%0A` +
+                         `*Alamat:* ${alamat}%0A` +
+                         `*Maps:* ${map}%0A` +
+                         `*Paket:* ${paket}%0A` +
+                         `*Nama WiFi:* ${wifi}%0A` +
+                         `*Sandi WiFi:* ${sandi}%0A` ;
+
+            window.location.href = `https://wa.me/?text=${text}`;
+        }
+    </script>
+</body>
+</html>
