@@ -83,6 +83,7 @@
     
     <input type="text" id="nama" placeholder="Nama Pelanggan">
     <textarea id="alamat" rows="2" placeholder="Alamat Lengkap / Patokan"></textarea>
+    <input type="tel" id="whatsapp_pelanggan" placeholder="Nomor WhatsApp">
     
     <label>Link / Koordinat Maps</label>
     <div class="input-group">
@@ -98,6 +99,8 @@
         <option value="Basic 175k">Basic 175k</option>
         <option value="Pro 220k">Pro 220k</option>
         <option value="Combo TV 250k">Combo TV 250k</option>
+<option value="Gamers 315k">Gamers 315k</option>
+<option value="Fun 510k">Fun 510k</option>
     </select>
     
     <input type="text" id="wifi" placeholder="Nama WiFi">
@@ -109,23 +112,17 @@
 <script>
     async function pasteCoordinates() {
         try {
-            // Meminta izin dan mengambil teks dari clipboard
             const text = await navigator.clipboard.readText();
-            
-            // Logika untuk membersihkan teks (menghilangkan spasi berlebih atau karakter aneh)
-            // Mendeteksi angka koordinat (lat, lng)
             const coordRegex = /(-?\d+\.\d+),\s*(-?\d+\.\d+)/;
             const match = text.match(coordRegex);
 
             if (match) {
                 const lat = match[1];
                 const lng = match[2];
-                // Mengubah menjadi URL Google Maps yang valid
+                // Perbaikan link maps agar lebih standar
                 const formattedUrl = `https://www.google.com/maps?q=${lat},${lng}`;
                 document.getElementById("map-link").value = formattedUrl;
             } else {
-                // Jika teks yang di-paste bukan koordinat murni, masukkan apa adanya
-                // (Mungkin user paste link lengkap)
                 document.getElementById("map-link").value = text;
             }
         } catch (err) {
@@ -136,6 +133,7 @@
     function kirimWA() {
         const nama = document.getElementById('nama').value;
         const alamat = document.getElementById('alamat').value;
+        const waPelanggan = document.getElementById('whatsapp_pelanggan').value; // Ambil nilai WA
         const mapLink = document.getElementById('map-link').value;
         const paket = document.getElementById('paket').value;
         const wifi = document.getElementById('wifi').value;
@@ -149,6 +147,7 @@
         const pesan = `*DATA PEMASANGAN WIFI*%0A%0A` +
                       `*Nama:* ${nama}%0A` +
                       `*Alamat:* ${alamat}%0A` +
+                      `*Nomor WA:* ${waPelanggan}%0A` +
                       `*Maps:* ${mapLink}%0A` +
                       `*Paket:* ${paket}%0A` +
                       `*WiFi:* ${wifi}%0A` +
