@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Survey WiFi - Paste Coordinator</title>
+    <title>Survey WiFi - Copy to Clipboard</title>
     <style>
         :root {
-            --primary-color: #25D366;
-            --secondary-color: #128C7E;
-            --bg-color: #e5ddd5;
+            --primary-color: #34b7f1; /* Warna Biru (Copy) */
+            --secondary-color: #0d95e8;
+            --bg-color: #f0f2f5;
         }
 
         body { 
@@ -27,7 +27,7 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.1); 
         }
 
-        h2 { color: #075E54; text-align: center; margin-bottom: 20px; font-size: 1.5rem; }
+        h2 { color: #333; text-align: center; margin-bottom: 20px; font-size: 1.5rem; }
         
         label { font-weight: bold; display: block; margin-top: 15px; color: #444; font-size: 0.9rem; }
         
@@ -37,7 +37,6 @@
             box-sizing: border-box; font-size: 16px;
         }
 
-        /* Container untuk Input Maps + Tombol Paste */
         .input-group {
             display: flex;
             gap: 10px;
@@ -45,14 +44,14 @@
         }
 
         .input-group input {
-            flex: 1; /* Input mengambil sisa ruang */
+            flex: 1; 
             margin: 0;
             background-color: #f9f9f9;
         }
 
         .btn-paste {
             padding: 12px 15px;
-            background-color: #34b7f1;
+            background-color: #666;
             color: white;
             border: none;
             border-radius: 8px;
@@ -62,18 +61,20 @@
             transition: 0.3s;
         }
 
-        .btn-paste:hover { background-color: #0d95e8; }
+        .btn-paste:hover { background-color: #444; }
 
         .hint { font-size: 0.75rem; color: #777; margin-top: 5px; font-style: italic; }
         
-        .btn-kirim { 
+        .btn-copy { 
             width: 100%; padding: 16px; background-color: var(--primary-color); 
             color: white; border: none; border-radius: 10px; 
             font-weight: bold; cursor: pointer; font-size: 17px; 
-            margin-top: 25px; box-shadow: 0 4px 10px rgba(37, 211, 102, 0.3);
+            margin-top: 25px; box-shadow: 0 4px 10px rgba(52, 183, 241, 0.3);
+            transition: 0.3s;
         }
         
-        .btn-kirim:hover { background-color: var(--secondary-color); }
+        .btn-copy:hover { background-color: var(--secondary-color); }
+        .btn-success { background-color: #28a745 !important; }
     </style>
 </head>
 <body>
@@ -99,14 +100,14 @@
         <option value="Basic 175k">Basic 175k</option>
         <option value="Pro 220k">Pro 220k</option>
         <option value="Combo TV 250k">Combo TV 250k</option>
-<option value="Gamers 315k">Gamers 315k</option>
-<option value="Fun 510k">Fun 510k</option>
+        <option value="Gamers 315k">Gamers 315k</option>
+        <option value="Fun 510k">Fun 510k</option>
     </select>
     
     <input type="text" id="wifi" placeholder="Nama WiFi">
     <input type="text" id="sandi" placeholder="Sandi WiFi">
     
-    <button class="btn-kirim" onclick="kirimWA()">KIRIM KE WHATSAPP</button>
+    <button id="btnAction" class="btn-copy" onclick="copyToClipboard()">SALIN DATA KE CLIPBOARD</button>
 </div>
 
 <script>
@@ -119,21 +120,21 @@
             if (match) {
                 const lat = match[1];
                 const lng = match[2];
-                // Perbaikan link maps agar lebih standar
+                // Link Maps format standar
                 const formattedUrl = `https://www.google.com/maps?q=${lat},${lng}`;
                 document.getElementById("map-link").value = formattedUrl;
             } else {
                 document.getElementById("map-link").value = text;
             }
         } catch (err) {
-            alert("Gagal mengakses clipboard. Pastikan Anda mengizinkan akses atau gunakan browser modern.");
+            alert("Gagal mengakses clipboard. Pastikan izin aktif.");
         }
     }
 
-    function kirimWA() {
+    function copyToClipboard() {
         const nama = document.getElementById('nama').value;
         const alamat = document.getElementById('alamat').value;
-        const waPelanggan = document.getElementById('whatsapp_pelanggan').value; // Ambil nilai WA
+        const waPelanggan = document.getElementById('whatsapp_pelanggan').value;
         const mapLink = document.getElementById('map-link').value;
         const paket = document.getElementById('paket').value;
         const wifi = document.getElementById('wifi').value;
@@ -144,16 +145,32 @@
             return;
         }
 
-        const pesan = `*DATA PEMASANGAN WIFI*%0A%0A` +
-                      `*Nama:* ${nama}%0A` +
-                      `*Alamat:* ${alamat}%0A` +
-                      `*Nomor WA:* ${waPelanggan}%0A` +
-                      `*Maps:* ${mapLink}%0A` +
-                      `*Paket:* ${paket}%0A` +
-                      `*WiFi:* ${wifi}%0A` +
-                      `*Sandi:* ${sandi}`;
+        // Format teks untuk clipboard (menggunakan \n untuk baris baru)
+        const teksLengkap = `*DATA PEMASANGAN WIFI*\n\n` +
+                          `*Nama:* ${nama}\n` +
+                          `*Alamat:* ${alamat}\n` +
+                          `*Nomor WA:* ${waPelanggan}\n` +
+                          `*Maps:* ${mapLink}\n` +
+                          `*Paket:* ${paket}\n` +
+                          `*WiFi:* ${wifi}\n` +
+                          `*Sandi:* ${sandi}`;
 
-        window.open(`https://api.whatsapp.com/send?text=${pesan}`, '_blank');
+        // Proses Copy
+        navigator.clipboard.writeText(teksLengkap).then(() => {
+            const btn = document.getElementById('btnAction');
+            const originalText = btn.innerText;
+            
+            // Efek Visual Berhasil
+            btn.innerText = "✅ BERHASIL DISALIN!";
+            btn.classList.add('btn-success');
+            
+            setTimeout(() => {
+                btn.innerText = originalText;
+                btn.classList.remove('btn-success');
+            }, 2000);
+        }).catch(err => {
+            alert('Gagal menyalin teks: ', err);
+        });
     }
 </script>
 
