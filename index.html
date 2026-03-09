@@ -3,157 +3,136 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Survey Calon Pelanggan Wifi</title>
+    <title>Survey Pelanggan Wifi</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
             --primary-color: #34b7f1; 
-            --secondary-color: #0d95e8;
             --bg-color: #f0f2f5;
+            --card-bg: #ffffff;
+            --text-main: #333333;
+            --text-label: #444444;
+            --input-bg: #ffffff;
+            --input-border: #ddd;
             --accent-color: #28a745;
-            --danger-color: #dc3545;
             --wa-color: #25d366;
+            --group-label: #666;
+        }
+
+        /* Class Dark Mode Manual */
+        .dark-mode {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --text-main: #e0e0e0;
+            --text-label: #bbbbbb;
+            --input-bg: #2d2d2d;
+            --input-border: #444;
+            --group-label: #999;
         }
 
         body { 
             font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
             padding: 15px; 
-            line-height: 1.4; 
             max-width: 500px; 
             margin: auto; 
             background-color: var(--bg-color); 
+            color: var(--text-main);
+            transition: all 0.3s ease;
         }
 
         .card { 
-            background: white; 
+            background: var(--card-bg); 
             padding: 20px; 
             border-radius: 15px; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1); 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
             position: relative;
         }
 
-        h2 { color: #333; text-align: center; margin-bottom: 20px; font-size: 1.5rem; }
-        
-        label { font-weight: bold; display: block; margin-top: 15px; color: #444; font-size: 0.9rem; }
+        /* Tombol Toggle Tema */
+        .theme-toggle {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            color: var(--primary-color);
+            border: 1px solid var(--input-border);
+            padding: 5px 10px;
+            border-radius: 8px;
+            background: var(--input-bg);
+        }
+
+        h2 { text-align: center; margin-bottom: 20px; font-size: 1.4rem; padding-right: 30px; }
+        label { font-weight: bold; display: block; margin-top: 15px; color: var(--text-label); font-size: 0.85rem; }
         
         input, select, textarea { 
             width: 100%; padding: 12px; margin: 8px 0; 
-            border: 1px solid #ddd; border-radius: 8px; 
+            border: 1px solid var(--input-border); 
+            border-radius: 8px; 
             box-sizing: border-box; font-size: 16px;
+            background-color: var(--input-bg);
+            color: var(--text-main);
         }
 
-        .input-group {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-        }
-
-        .input-group input {
-            flex: 1; 
-            margin: 0;
-            background-color: #f1f1f1;
-            color: #555;
-            font-size: 14px;
-        }
+        .input-group { display: flex; gap: 8px; align-items: center; }
+        .input-group input { flex: 1; margin: 0; opacity: 0.8; font-size: 13px; }
 
         .btn-process {
-            padding: 12px 15px;
+            padding: 10px 12px;
             background-color: var(--accent-color);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 13px;
-            white-space: nowrap;
-            transition: 0.3s;
+            color: white; border: none; border-radius: 8px;
+            cursor: pointer; font-weight: bold; font-size: 11px;
         }
 
-        /* Grouping Section untuk Tombol */
         .copy-group {
             margin-top: 25px;
             padding-top: 15px;
-            border-top: 1px dashed #ccc;
+            border-top: 1px dashed var(--input-border);
         }
 
         .copy-label {
-            display: block;
-            text-align: center;
-            font-weight: bold;
-            color: #666;
-            margin-bottom: 12px;
-            font-size: 0.85rem;
-            letter-spacing: 1px;
+            display: block; text-align: center; font-weight: bold;
+            color: var(--group-label); margin-bottom: 12px; font-size: 0.8rem;
         }
 
-        .button-wrapper {
-            display: flex;
-            gap: 10px;
-        }
+        .button-wrapper { display: flex; gap: 10px; }
 
         .btn-main { 
-            flex: 1; 
-            padding: 14px 5px; 
-            color: white; 
-            border: none; 
-            border-radius: 10px; 
-            font-weight: bold; 
-            cursor: pointer; 
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px; /* Jarak antara ikon dan teks */
-            transition: 0.3s;
-            text-transform: uppercase;
+            flex: 1; padding: 14px 5px; color: white; border: none; 
+            border-radius: 10px; font-weight: bold; cursor: pointer; 
+            font-size: 12px; display: flex; align-items: center;
+            justify-content: center; gap: 8px; text-transform: uppercase;
         }
 
-        .btn-blue {
-            background-color: var(--primary-color); 
-            box-shadow: 0 4px 10px rgba(52, 183, 241, 0.3);
-        }
-
-        .btn-whatsapp {
-            background-color: var(--wa-color);
-            box-shadow: 0 4px 10px rgba(37, 211, 102, 0.3);
-        }
+        .btn-blue { background-color: var(--primary-color); }
+        .btn-whatsapp { background-color: var(--wa-color); }
 
         #toast {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.85);
-            color: white;
-            padding: 15px 25px;
-            border-radius: 10px;
-            font-size: 14px;
-            font-weight: bold;
-            text-align: center;
-            z-index: 1000;
-            display: none;
-            width: 80%;
-            pointer-events: none;
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9); color: white; padding: 15px 25px;
+            border-radius: 10px; display: none; z-index: 1000; text-align: center;
         }
-        
-        .success-flash { background-color: #28a745 !important; }
     </style>
 </head>
-<body>
+<body id="bodyTag">
 
 <div class="card">
+    <div class="theme-toggle" onclick="toggleTheme()">
+        <i id="themeIcon" class="fa-solid fa-moon"></i>
+    </div>
+
     <div id="toast"></div>
 
-    <h2>Data Calon Pelanggan</h2>
+    <h2>Data Pelanggan</h2>
     
     <input type="text" id="nama" placeholder="Nama Pelanggan">
     <textarea id="alamat" rows="2" placeholder="Alamat Lengkap / Patokan"></textarea>
     <input type="tel" id="whatsapp_pelanggan" placeholder="Nomor WhatsApp">
     
-    <label>Koordinat Maps ( Contoh : -6.123, 109.123)</label>
+    <label>Koordinat Maps ( Contoh : -6.123, 109.123 )</label>
     <div class="input-group">
         <input type="text" id="map-link" placeholder="URL otomatis muncul..." readonly>
-        <button type="button" id="btnPasteCopy" class="btn-process" onclick="handleMapLogic()">PASTE KOORDINAT</button>
+        <button type="button" id="btnPasteCopy" class="btn-process" onclick="handleMapLogic()">PASTE</button>
     </div>
     
     <label>Pilihan Paket</label>
@@ -163,8 +142,6 @@
         <option value="Basic 175k">Basic 175k</option>
         <option value="Pro 220k">Pro 220k</option>
         <option value="Combo TV 250k">Combo TV 250k</option>
-        <option value="Gamers 315k">Gamers 315k</option>
-        <option value="Fun 510k">Fun 510k</option>
     </select>
     
     <div class="copy-group">
@@ -181,16 +158,32 @@
 </div>
 
 <script>
-    function showToast(message, isError = false) {
+    // Inisialisasi Tema Berdasarkan Sistem
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark-mode');
+        document.getElementById('themeIcon').classList.replace('fa-moon', 'fa-sun');
+    }
+
+    function toggleTheme() {
+        const body = document.body;
+        const icon = document.getElementById('themeIcon');
+        body.classList.toggle('dark-mode');
+        
+        if (body.classList.contains('dark-mode')) {
+            icon.classList.replace('fa-moon', 'fa-sun');
+        } else {
+            icon.classList.replace('fa-sun', 'fa-moon');
+        }
+    }
+
+    function showToast(message) {
         const toast = document.getElementById('toast');
         toast.innerText = message;
         toast.style.display = 'block';
-        toast.style.backgroundColor = isError ? 'rgba(220, 53, 69, 0.95)' : 'rgba(0, 0, 0, 0.85)';
         setTimeout(() => { toast.style.display = 'none'; }, 2000);
     }
 
     async function handleMapLogic() {
-        const btn = document.getElementById('btnPasteCopy');
         const inputMap = document.getElementById('map-link');
         try {
             const text = await navigator.clipboard.readText();
@@ -200,59 +193,46 @@
                 const finalUrl = `https://www.google.com/maps?q=${match[1]},${match[2]}`;
                 inputMap.value = finalUrl;
                 await navigator.clipboard.writeText(finalUrl);
-                btn.innerText = "BERHASIL ✅";
-                btn.style.backgroundColor = "#218838";
-                showToast("Link Maps berhasil dibuat!");
-                setTimeout(() => { 
-                    btn.innerText = "PASTE KOORDINAT"; 
-                    btn.style.backgroundColor = ""; 
-                }, 2000);
+                showToast("Link Maps Berhasil Dibuat!");
             } else {
-                showToast("Koordinat tidak ditemukan!", true);
+                showToast("Koordinat tidak ditemukan!");
             }
         } catch (err) {
-            showToast("Gagal akses clipboard!", true);
+            showToast("Gagal akses clipboard!");
         }
     }
 
     function getFormattedData() {
         const nama = document.getElementById('nama').value;
         const alamat = document.getElementById('alamat').value;
-        const waPelanggan = document.getElementById('whatsapp_pelanggan').value;
-        const mapLink = document.getElementById('map-link').value;
+        const wa = document.getElementById('whatsapp_pelanggan').value;
+        const maps = document.getElementById('map-link').value;
         const paket = document.getElementById('paket').value;
 
-        if (!nama || !mapLink) {
-            showToast("Nama & Maps wajib diisi!", true);
+        if (!nama || !maps) {
+            showToast("Nama & Maps wajib diisi!");
             return null;
         }
 
         return `*DATA CALON PELANGGAN*\n\n` +
-               `*Nama:* ${nama}\n` +
-               `*Alamat:* ${alamat}\n` +
-               `*Nomor WA:* ${waPelanggan}\n` +
-               `*Maps:* ${mapLink}\n` +
-               `*Paket:* ${paket}`;
+               `*Nama:* ${nama}\n*Alamat:* ${alamat}\n` +
+               `*WhatsApp:* ${wa}\n*Maps:* ${maps}\n*Paket:* ${paket}`;
     }
 
     function copyFullData() {
         const teks = getFormattedData();
-        if (!teks) return;
-        navigator.clipboard.writeText(teks).then(() => {
-            const btn = document.getElementById('btnAction');
-            btn.classList.add('success-flash');
-            showToast("Data disalin ke klipboard!");
-            setTimeout(() => btn.classList.remove('success-flash'), 2000);
-        });
+        if (teks) {
+            navigator.clipboard.writeText(teks);
+            showToast("Berhasil Salin ke Klipboard!");
+        }
     }
 
     function sendToWhatsApp() {
         const teks = getFormattedData();
-        if (!teks) return;
-        navigator.clipboard.writeText(teks).then(() => {
-            const encodedText = encodeURIComponent(teks);
-            window.open(`https://api.whatsapp.com/send?text=${encodedText}`, '_blank');
-        });
+        if (teks) {
+            navigator.clipboard.writeText(teks);
+            window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(teks)}`, '_blank');
+        }
     }
 </script>
 
