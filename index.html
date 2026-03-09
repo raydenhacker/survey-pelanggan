@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Survey Pelanggan WiFi</title>
+    <title>Survey Calon Pelanggan WiFi</title>
     <style>
         :root {
             --primary-color: #34b7f1; 
@@ -60,9 +60,10 @@
             border-radius: 8px;
             cursor: pointer;
             font-weight: bold;
-            font-size: 12px;
+            font-size: 13px;
             white-space: nowrap;
             transition: 0.3s;
+            min-width: 140px;
         }
 
         .btn-process:hover { background-color: #218838; }
@@ -92,10 +93,10 @@
     
     <label>Link / Koordinat Maps</label>
     <div class="input-group">
-        <input type="text" id="map-link" placeholder="URL akan muncul di sini..." readonly>
-        <button type="button" id="btnPasteCopy" class="btn-process" onclick="handleMapLogic()">PASTE & COPY URL</button>
+        <input type="text" id="map-link" placeholder="URL otomatis muncul..." readonly>
+        <button type="button" id="btnPasteCopy" class="btn-process" onclick="handleMapLogic()">Paste Koordinat</button>
     </div>
-    <p class="hint">*Klik tombol hijau untuk mengubah koordinat di clipboard menjadi link Maps.</p>
+    <p class="hint">*Salin koordinat dari Maps, lalu klik tombol hijau.</p>
     
     <label>Pilihan Paket</label>
     <select id="paket">
@@ -119,34 +120,40 @@
         try {
             // 1. Ambil teks dari clipboard
             const text = await navigator.clipboard.readText();
+            
+            // Regex untuk mendeteksi koordinat murni: angka.angka, angka.angka
             const coordRegex = /(-?\d+\.\d+),\s*(-?\d+\.\d+)/;
             const match = text.match(coordRegex);
 
-            let finalUrl = "";
-
             if (match) {
-                // 2. Jika format koordinat, buat link
+                // 2. Jika valid koordinat, buat link
                 const lat = match[1];
                 const lng = match[2];
-                finalUrl = `https://www.google.com/maps?q=${lat},${lng}`;
+                const finalUrl = `https://www.google.com/maps?q=${lat},${lng}`;
+                
+                // 3. Masukkan ke input UI
+                inputMap.value = finalUrl;
+
+                // 4. Salin kembali link hasil ke clipboard
+                await navigator.clipboard.writeText(finalUrl);
+
+                // 5. Perubahan teks tombol sementara
+                const originalText = "Paste Koordinat";
+                btn.innerText = "URL Berhasil dibuat ✅";
+                btn.style.backgroundColor = "#218838";
+                
+                setTimeout(() => { 
+                    btn.innerText = originalText; 
+                    btn.style.backgroundColor = ""; // Kembali ke warna css awal
+                }, 2000);
+
             } else {
-                // Jika bukan koordinat, gunakan teks apa adanya (asumsi sudah link)
-                finalUrl = text;
+                // Jika yang dipaste bukan koordinat
+                alert("Peringatan: Teks yang Anda salin bukan format koordinat Google Maps (contoh: -6.123, 106.123). Silakan salin koordinat yang benar.");
             }
 
-            // 3. Masukkan ke input UI
-            inputMap.value = finalUrl;
-
-            // 4. Salin kembali link hasil generate ke clipboard
-            await navigator.clipboard.writeText(finalUrl);
-
-            // Efek visual sukses kecil
-            const originalText = btn.innerText;
-            btn.innerText = "COPIED! ✅";
-            setTimeout(() => { btn.innerText = originalText; }, 1500);
-
         } catch (err) {
-            alert("Gagal mengakses clipboard. Pastikan izin aktif.");
+            alert("Gagal mengakses clipboard. Pastikan izin browser aktif.");
         }
     }
 
