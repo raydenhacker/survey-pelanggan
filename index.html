@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Survey WiFi - Copy to Clipboard</title>
+    <title>Survey Pelanggan WiFi</title>
     <style>
         :root {
-            --primary-color: #34b7f1; /* Warna Biru (Copy) */
+            --primary-color: #34b7f1; 
             --secondary-color: #0d95e8;
             --bg-color: #f0f2f5;
+            --gray-color: #666;
         }
 
         body { 
@@ -39,7 +40,7 @@
 
         .input-group {
             display: flex;
-            gap: 10px;
+            gap: 5px;
             align-items: center;
         }
 
@@ -49,23 +50,28 @@
             background-color: #f9f9f9;
         }
 
-        .btn-paste {
-            padding: 12px 15px;
-            background-color: #666;
+        .btn-action-small {
+            padding: 12px 10px;
             color: white;
             border: none;
             border-radius: 8px;
             cursor: pointer;
             font-weight: bold;
+            font-size: 12px;
             white-space: nowrap;
             transition: 0.3s;
+            min-width: 65px;
         }
 
+        .btn-paste { background-color: var(--gray-color); }
         .btn-paste:hover { background-color: #444; }
+
+        .btn-copy-url { background-color: #28a745; }
+        .btn-copy-url:hover { background-color: #218838; }
 
         .hint { font-size: 0.75rem; color: #777; margin-top: 5px; font-style: italic; }
         
-        .btn-copy { 
+        .btn-main { 
             width: 100%; padding: 16px; background-color: var(--primary-color); 
             color: white; border: none; border-radius: 10px; 
             font-weight: bold; cursor: pointer; font-size: 17px; 
@@ -73,8 +79,8 @@
             transition: 0.3s;
         }
         
-        .btn-copy:hover { background-color: var(--secondary-color); }
-        .btn-success { background-color: #28a745 !important; }
+        .btn-main:hover { background-color: var(--secondary-color); }
+        .btn-success-anim { background-color: #28a745 !important; }
     </style>
 </head>
 <body>
@@ -88,12 +94,13 @@
     
     <label>Link / Koordinat Maps</label>
     <div class="input-group">
-        <input type="text" id="map-link" placeholder="Paste koordinat di sini..." readonly>
-        <button type="button" class="btn-paste" onclick="pasteCoordinates()">PASTE</button>
+        <input type="text" id="map-link" placeholder="Hasil URL Maps..." readonly>
+        <button type="button" class="btn-action-small btn-paste" onclick="pasteCoordinates()">PASTE</button>
+        <button type="button" class="btn-action-small btn-copy-url" onclick="copyMapOnly()">COPY</button>
     </div>
-    <p class="hint">*Copy koordinat dari Google Maps, lalu tekan tombol PASTE</p>
+    <p class="hint">*Tekan PASTE untuk generate URL dari koordinat, COPY untuk ambil link saja.</p>
     
-    <label>Paket & WiFi</label>
+    <label>Pilihan Paket</label>
     <select id="paket">
         <option value="">-- Pilih Paket --</option>
         <option value="Lite 130k">Lite 130k</option>
@@ -104,69 +111,74 @@
         <option value="Fun 510k">Fun 510k</option>
     </select>
     
-    <input type="text" id="wifi" placeholder="Nama WiFi">
-    <input type="text" id="sandi" placeholder="Sandi WiFi">
-    
-    <button id="btnAction" class="btn-copy" onclick="copyToClipboard()">SALIN DATA KE CLIPBOARD</button>
+    <button id="btnAction" class="btn-main" onclick="copyFullData()">SALIN SEMUA DATA</button>
 </div>
 
 <script>
+    // Fungsi untuk menempel dan memformat koordinat
     async function pasteCoordinates() {
         try {
             const text = await navigator.clipboard.readText();
+            // Regex untuk menangkap pola koordinat (lat, lng)
             const coordRegex = /(-?\d+\.\d+),\s*(-?\d+\.\d+)/;
             const match = text.match(coordRegex);
 
             if (match) {
                 const lat = match[1];
                 const lng = match[2];
-                // Link Maps format standar
                 const formattedUrl = `https://www.google.com/maps?q=${lat},${lng}`;
                 document.getElementById("map-link").value = formattedUrl;
             } else {
+                // Jika bukan koordinat, masukkan teks mentah (asumsi link sudah jadi)
                 document.getElementById("map-link").value = text;
             }
         } catch (err) {
-            alert("Gagal mengakses clipboard. Pastikan izin aktif.");
+            alert("Gagal mengakses clipboard. Pastikan izin aktif di browser.");
         }
     }
 
-    function copyToClipboard() {
+    // Fungsi khusus salin URL Maps saja
+    function copyMapOnly() {
+        const mapLink = document.getElementById("map-link").value;
+        if (!mapLink) {
+            alert("Belum ada link untuk disalin!");
+            return;
+        }
+        navigator.clipboard.writeText(mapLink).then(() => {
+            alert("Link Maps berhasil disalin!");
+        });
+    }
+
+    // Fungsi salin semua data
+    function copyFullData() {
         const nama = document.getElementById('nama').value;
         const alamat = document.getElementById('alamat').value;
         const waPelanggan = document.getElementById('whatsapp_pelanggan').value;
         const mapLink = document.getElementById('map-link').value;
         const paket = document.getElementById('paket').value;
-        const wifi = document.getElementById('wifi').value;
-        const sandi = document.getElementById('sandi').value;
 
         if (!nama || !mapLink) {
             alert("Nama dan Link Maps wajib diisi!");
             return;
         }
 
-        // Format teks untuk clipboard (menggunakan \n untuk baris baru)
-        const teksLengkap = `*DATA PEMASANGAN WIFI*\n\n` +
+        const teksLengkap = `*DATA CALON PELANGGAN*\n\n` +
                           `*Nama:* ${nama}\n` +
                           `*Alamat:* ${alamat}\n` +
                           `*Nomor WA:* ${waPelanggan}\n` +
                           `*Maps:* ${mapLink}\n` +
-                          `*Paket:* ${paket}\n` +
-                          `*WiFi:* ${wifi}\n` +
-                          `*Sandi:* ${sandi}`;
+                          `*Paket:* ${paket}`;
 
-        // Proses Copy
         navigator.clipboard.writeText(teksLengkap).then(() => {
             const btn = document.getElementById('btnAction');
             const originalText = btn.innerText;
             
-            // Efek Visual Berhasil
-            btn.innerText = "✅ BERHASIL DISALIN!";
-            btn.classList.add('btn-success');
+            btn.innerText = "✅ DATA BERHASIL DISALIN!";
+            btn.classList.add('btn-success-anim');
             
             setTimeout(() => {
                 btn.innerText = originalText;
-                btn.classList.remove('btn-success');
+                btn.classList.remove('btn-success-anim');
             }, 2000);
         }).catch(err => {
             alert('Gagal menyalin teks: ', err);
