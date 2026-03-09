@@ -11,7 +11,7 @@
             --bg-color: #f0f2f5;
             --accent-color: #28a745;
             --danger-color: #dc3545;
-            --wa-color: #25d366; /* Warna khas WhatsApp */
+            --wa-color: #25d366;
         }
 
         body { 
@@ -70,7 +70,33 @@
             min-width: 140px;
         }
 
-        /* Notifikasi Mengambang */
+        /* Container untuk tombol berdampingan */
+        .button-wrapper {
+            display: flex;
+            gap: 10px;
+            margin-top: 25px;
+        }
+
+        .btn-main { 
+            flex: 1; /* Membuat tombol memiliki lebar yang sama */
+            padding: 15px 5px; 
+            background-color: var(--primary-color); 
+            color: white; 
+            border: none; 
+            border-radius: 10px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            font-size: 12px; /* Ukuran font disesuaikan agar teks panjang muat */
+            box-shadow: 0 4px 10px rgba(52, 183, 241, 0.3);
+            transition: 0.3s;
+            text-transform: uppercase;
+        }
+
+        .btn-whatsapp {
+            background-color: var(--wa-color);
+            box-shadow: 0 4px 10px rgba(37, 211, 102, 0.3);
+        }
+
         #toast {
             position: absolute;
             top: 50%;
@@ -89,19 +115,6 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.3);
             pointer-events: none;
         }
-
-        .btn-main { 
-            width: 100%; padding: 16px; background-color: var(--primary-color); 
-            color: white; border: none; border-radius: 10px; 
-            font-weight: bold; cursor: pointer; font-size: 17px; 
-            margin-top: 15px; box-shadow: 0 4px 10px rgba(52, 183, 241, 0.3);
-            transition: 0.3s;
-        }
-
-        .btn-whatsapp {
-            background-color: var(--wa-color);
-            box-shadow: 0 4px 10px rgba(37, 211, 102, 0.3);
-        }
         
         .success-flash { background-color: #28a745 !important; }
     </style>
@@ -117,7 +130,7 @@
     <textarea id="alamat" rows="2" placeholder="Alamat Lengkap / Patokan"></textarea>
     <input type="tel" id="whatsapp_pelanggan" placeholder="Nomor WhatsApp">
     
-    <label>Link / Koordinat Maps (contoh : -6.123, 109.123)</label>
+    <label>Link / Koordinat Maps</label>
     <div class="input-group">
         <input type="text" id="map-link" placeholder="URL otomatis muncul..." readonly>
         <button type="button" id="btnPasteCopy" class="btn-process" onclick="handleMapLogic()">PASTE KOORDINAT</button>
@@ -134,8 +147,10 @@
         <option value="Fun 510k">Fun 510k</option>
     </select>
     
-    <button id="btnAction" class="btn-main" onclick="copyFullData()">SALIN KE KLIPBOARD</button>
-    <button id="btnWA" class="btn-main btn-whatsapp" onclick="sendToWhatsApp()">SALIN KE WHATSAPP</button>
+    <div class="button-wrapper">
+        <button id="btnAction" class="btn-main" onclick="copyFullData()">SALIN KE KLIPBOARD</button>
+        <button id="btnWA" class="btn-main btn-whatsapp" onclick="sendToWhatsApp()">SALIN KE WHATSAPP</button>
+    </div>
 </div>
 
 <script>
@@ -165,14 +180,13 @@
                 const finalUrl = `https://www.google.com/maps?q=${lat},${lng}`;
                 
                 inputMap.value = finalUrl;
-                // Auto copy URL yang baru dibuat
                 await navigator.clipboard.writeText(finalUrl);
 
                 const originalText = "PASTE KOORDINAT";
-                btn.innerText = "URL BERHASIL DIBUAT ✅";
+                btn.innerText = "BERHASIL ✅";
                 btn.style.backgroundColor = "#218838";
                 
-                showToast("URL Maps berhasil disalin!");
+                showToast("URL Maps berhasil dibuat & disalin!");
 
                 setTimeout(() => { 
                     btn.innerText = originalText; 
@@ -180,14 +194,13 @@
                 }, 2000);
 
             } else {
-                showToast("Bukan format koordinat yang valid!", true);
+                showToast("Bukan format koordinat valid!", true);
             }
         } catch (err) {
             showToast("Izin clipboard ditolak!", true);
         }
     }
 
-    // Fungsi pusat untuk mengambil data teks
     function getFormattedData() {
         const nama = document.getElementById('nama').value;
         const alamat = document.getElementById('alamat').value;
@@ -209,29 +222,23 @@
     }
 
     function copyFullData() {
-        const teksLengkap = getFormattedData();
-        if (!teksLengkap) return;
+        const teks = getFormattedData();
+        if (!teks) return;
 
-        navigator.clipboard.writeText(teksLengkap).then(() => {
+        navigator.clipboard.writeText(teks).then(() => {
             const btn = document.getElementById('btnAction');
             btn.classList.add('success-flash');
-            showToast("Data disalin ke klipboard!");
-            
-            setTimeout(() => {
-                btn.classList.remove('success-flash');
-            }, 2000);
+            showToast("Teks disalin ke klipboard!");
+            setTimeout(() => btn.classList.remove('success-flash'), 2000);
         });
     }
 
     function sendToWhatsApp() {
-        const teksLengkap = getFormattedData();
-        if (!teksLengkap) return;
+        const teks = getFormattedData();
+        if (!teks) return;
 
-        // Salin ke klipboard dulu agar pengguna punya cadangan
-        navigator.clipboard.writeText(teksLengkap).then(() => {
-            // Encode teks untuk URL
-            const encodedText = encodeURIComponent(teksLengkap);
-            // Membuka WhatsApp (api.whatsapp.com bekerja baik di mobile maupun web)
+        navigator.clipboard.writeText(teks).then(() => {
+            const encodedText = encodeURIComponent(teks);
             window.open(`https://api.whatsapp.com/send?text=${encodedText}`, '_blank');
         });
     }
