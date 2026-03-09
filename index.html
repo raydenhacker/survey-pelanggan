@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Survey Calon Pelanggan Wifi</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
             --primary-color: #34b7f1; 
@@ -21,7 +22,6 @@
             max-width: 500px; 
             margin: auto; 
             background-color: var(--bg-color); 
-            position: relative;
         }
 
         .card { 
@@ -67,29 +67,50 @@
             font-size: 13px;
             white-space: nowrap;
             transition: 0.3s;
-            min-width: 140px;
         }
 
-        /* Container untuk tombol berdampingan */
+        /* Grouping Section untuk Tombol */
+        .copy-group {
+            margin-top: 25px;
+            padding-top: 15px;
+            border-top: 1px dashed #ccc;
+        }
+
+        .copy-label {
+            display: block;
+            text-align: center;
+            font-weight: bold;
+            color: #666;
+            margin-bottom: 12px;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+        }
+
         .button-wrapper {
             display: flex;
             gap: 10px;
-            margin-top: 25px;
         }
 
         .btn-main { 
-            flex: 1; /* Membuat tombol memiliki lebar yang sama */
-            padding: 15px 5px; 
-            background-color: var(--primary-color); 
+            flex: 1; 
+            padding: 14px 5px; 
             color: white; 
             border: none; 
             border-radius: 10px; 
             font-weight: bold; 
             cursor: pointer; 
-            font-size: 12px; /* Ukuran font disesuaikan agar teks panjang muat */
-            box-shadow: 0 4px 10px rgba(52, 183, 241, 0.3);
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px; /* Jarak antara ikon dan teks */
             transition: 0.3s;
             text-transform: uppercase;
+        }
+
+        .btn-blue {
+            background-color: var(--primary-color); 
+            box-shadow: 0 4px 10px rgba(52, 183, 241, 0.3);
         }
 
         .btn-whatsapp {
@@ -112,7 +133,6 @@
             z-index: 1000;
             display: none;
             width: 80%;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
             pointer-events: none;
         }
         
@@ -130,7 +150,7 @@
     <textarea id="alamat" rows="2" placeholder="Alamat Lengkap / Patokan"></textarea>
     <input type="tel" id="whatsapp_pelanggan" placeholder="Nomor WhatsApp">
     
-    <label>Link / Koordinat Maps</label>
+    <label>Koordinat Maps ( Contoh : -6.123, 109.123</label>
     <div class="input-group">
         <input type="text" id="map-link" placeholder="URL otomatis muncul..." readonly>
         <button type="button" id="btnPasteCopy" class="btn-process" onclick="handleMapLogic()">PASTE KOORDINAT</button>
@@ -147,9 +167,16 @@
         <option value="Fun 510k">Fun 510k</option>
     </select>
     
-    <div class="button-wrapper">
-        <button id="btnAction" class="btn-main" onclick="copyFullData()">SALIN KE KLIPBOARD</button>
-        <button id="btnWA" class="btn-main btn-whatsapp" onclick="sendToWhatsApp()">SALIN KE WHATSAPP</button>
+    <div class="copy-group">
+        <span class="copy-label">SALIN KE :</span>
+        <div class="button-wrapper">
+            <button id="btnAction" class="btn-main btn-blue" onclick="copyFullData()">
+                <i class="fa-regular fa-clipboard"></i> KLIPBOARD
+            </button>
+            <button id="btnWA" class="btn-main btn-whatsapp" onclick="sendToWhatsApp()">
+                <i class="fa-brands fa-whatsapp"></i> WHATSAPP
+            </button>
+        </div>
     </div>
 </div>
 
@@ -159,45 +186,32 @@
         toast.innerText = message;
         toast.style.display = 'block';
         toast.style.backgroundColor = isError ? 'rgba(220, 53, 69, 0.95)' : 'rgba(0, 0, 0, 0.85)';
-        
-        setTimeout(() => {
-            toast.style.display = 'none';
-        }, 2000);
+        setTimeout(() => { toast.style.display = 'none'; }, 2000);
     }
 
     async function handleMapLogic() {
         const btn = document.getElementById('btnPasteCopy');
         const inputMap = document.getElementById('map-link');
-
         try {
             const text = await navigator.clipboard.readText();
             const coordRegex = /(-?\d+\.\d+),\s*(-?\d+\.\d+)/;
             const match = text.match(coordRegex);
-
             if (match) {
-                const lat = match[1];
-                const lng = match[2];
-                const finalUrl = `https://www.google.com/maps?q=${lat},${lng}`;
-                
+                const finalUrl = `https://www.google.com/maps?q=${match[1]},${match[2]}`;
                 inputMap.value = finalUrl;
                 await navigator.clipboard.writeText(finalUrl);
-
-                const originalText = "PASTE KOORDINAT";
                 btn.innerText = "BERHASIL ✅";
                 btn.style.backgroundColor = "#218838";
-                
-                showToast("URL Maps berhasil dibuat & disalin!");
-
+                showToast("Link Maps berhasil dibuat!");
                 setTimeout(() => { 
-                    btn.innerText = originalText; 
+                    btn.innerText = "PASTE KOORDINAT"; 
                     btn.style.backgroundColor = ""; 
                 }, 2000);
-
             } else {
-                showToast("Bukan format koordinat valid!", true);
+                showToast("Koordinat tidak ditemukan!", true);
             }
         } catch (err) {
-            showToast("Izin clipboard ditolak!", true);
+            showToast("Gagal akses clipboard!", true);
         }
     }
 
@@ -224,11 +238,10 @@
     function copyFullData() {
         const teks = getFormattedData();
         if (!teks) return;
-
         navigator.clipboard.writeText(teks).then(() => {
             const btn = document.getElementById('btnAction');
             btn.classList.add('success-flash');
-            showToast("Teks disalin ke klipboard!");
+            showToast("Data disalin ke klipboard!");
             setTimeout(() => btn.classList.remove('success-flash'), 2000);
         });
     }
@@ -236,7 +249,6 @@
     function sendToWhatsApp() {
         const teks = getFormattedData();
         if (!teks) return;
-
         navigator.clipboard.writeText(teks).then(() => {
             const encodedText = encodeURIComponent(teks);
             window.open(`https://api.whatsapp.com/send?text=${encodedText}`, '_blank');
