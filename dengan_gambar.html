@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+0<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
@@ -298,10 +298,15 @@ function getFormattedDate() {
 
         return `*DATA CALON PELANGGAN*\n\n` +
                `*Nama:* ${nama}\n` +
+
+																`*WhatsApp:* ${document.getElementById('whatsapp_pelanggan').value}\n` +
+
+																`*Paket:* ${document.getElementById('paket').value}\n` +
+
                `*Alamat:* ${document.getElementById('alamat').value}\n` +
-               `*WhatsApp:* ${document.getElementById('whatsapp_pelanggan').value}\n` +
+               
                `*Maps:* ${maps}\n` +
-               `*Paket:* ${document.getElementById('paket').value}\n` +
+               
                `*Link Foto:* ${drive || "Tidak ada foto"}`;
     }
 
