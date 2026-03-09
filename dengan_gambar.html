@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Survey Pelanggan Wifi - Bahari Net</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #34b7f1; 
+            --bg-color: #f0f2f5;
+            --card-bg: #ffffff;
+            --text-main: #333333;
+            --text-label: #444444;
+            --input-bg: #ffffff;
+            --input-border: #ddd;
+            --accent-color: #28a745;
+            --wa-color: #25d366;
+            --group-label: #666;
+            --copyright-text: #888;
+        }
+
+        .dark-mode {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --text-main: #e0e0e0;
+            --text-label: #bbbbbb;
+            --input-bg: #2d2d2d;
+            --input-border: #444;
+            --group-label: #999;
+            --copyright-text: #666;
+        }
+
+        body { 
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+            padding: 15px; 
+            max-width: 500px; 
+            margin: auto; 
+            background-color: var(--bg-color); 
+            color: var(--text-main);
+            transition: all 0.3s ease;
+        }
+
+        .card { 
+            background: var(--card-bg); 
+            padding: 20px; 
+            border-radius: 15px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
+            position: relative;
+        }
+
+        .theme-toggle {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            color: var(--primary-color);
+            border: 1px solid var(--input-border);
+            padding: 5px 10px;
+            border-radius: 8px;
+            background: var(--input-bg);
+        }
+
+        h2 { text-align: center; margin-bottom: 20px; font-size: 1.4rem; padding-right: 30px; }
+        label { font-weight: bold; display: block; margin-top: 15px; color: var(--text-label); font-size: 0.85rem; }
+        
+        input, select, textarea { 
+            width: 100%; padding: 12px; margin: 8px 0; 
+            border: 1px solid var(--input-border); 
+            border-radius: 8px; 
+            box-sizing: border-box; font-size: 16px;
+            background-color: var(--input-bg);
+            color: var(--text-main);
+        }
+
+        /* Styling Tombol Upload */
+        .btn-upload-label {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: block;
+            text-align: center;
+            font-weight: bold;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+
+        .input-group { display: flex; gap: 8px; align-items: center; }
+        .input-group input { flex: 1; margin: 0; opacity: 0.8; font-size: 13px; }
+
+        .btn-process {
+            padding: 12px 15px;
+            background-color: var(--accent-color);
+            color: white; border: none; border-radius: 8px;
+            cursor: pointer; font-weight: bold; font-size: 11px;
+        }
+
+        .copy-group {
+            margin-top: 25px;
+            padding-top: 15px;
+            border-top: 1px dashed var(--input-border);
+        }
+
+        .copy-label {
+            display: block; text-align: center; font-weight: bold;
+            color: var(--group-label); margin-bottom: 12px; font-size: 0.8rem;
+        }
+
+        .button-wrapper { display: flex; gap: 10px; }
+
+        .btn-main { 
+            flex: 1; padding: 14px 5px; color: white; border: none; 
+            border-radius: 10px; font-weight: bold; cursor: pointer; 
+            font-size: 12px; display: flex; align-items: center;
+            justify-content: center; gap: 8px; text-transform: uppercase;
+        }
+
+        .btn-blue { background-color: var(--primary-color); }
+        .btn-whatsapp { background-color: var(--wa-color); }
+
+        .copyright-card {
+            margin-top: 15px;
+            background: var(--card-bg);
+            padding: 12px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .copyright-text {
+            font-size: 0.75rem;
+            color: var(--copyright-text);
+            margin: 0;
+            letter-spacing: 0.5px;
+        }
+
+        #toast {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9); color: white; padding: 15px 25px;
+            border-radius: 10px; display: none; z-index: 1000; text-align: center;
+        }
+    </style>
+</head>
+<body id="bodyTag">
+
+<div class="card">
+    <div class="theme-toggle" onclick="toggleTheme()">
+        <i id="themeIcon" class="fa-solid fa-moon"></i>
+    </div>
+
+    <div id="toast"></div>
+
+    <h2>Data Pelanggan</h2>
+    
+    <input type="text" id="nama" placeholder="Nama Pelanggan">
+    <textarea id="alamat" rows="2" placeholder="Alamat Lengkap / Patokan"></textarea>
+    <input type="tel" id="whatsapp_pelanggan" placeholder="Nomor WhatsApp">
+    
+    <label>Koordinat Maps</label>
+    <div class="input-group">
+        <input type="text" id="map-link" placeholder="URL Google Maps..." readonly>
+        <button type="button" class="btn-process" onclick="handleMapLogic()">PASTE</button>
+    </div>
+
+    <label>Foto Rumah (Upload ke Drive)</label>
+    <label for="foto-rumah" id="label-upload" class="btn-upload-label">
+        <i class="fa-solid fa-cloud-arrow-up"></i> PILIH & UPLOAD FOTO
+    </label>
+    <input type="file" id="foto-rumah" accept="image/*" style="display:none" onchange="handleFileUpload(event)">
+    <input type="text" id="drive-link" placeholder="Link Drive akan muncul di sini..." readonly style="font-size: 12px; opacity: 0.7;">
+    
+    <label>Pilihan Paket</label>
+    <select id="paket">
+        <option value="">-- Pilih Paket --</option>
+        <option value="Lite 130k">Bahari Lite 130k</option>
+        <option value="Basic 175k">Bahari Basic 175k</option>
+        <option value="Pro 220k">Bahari Pro 220k</option>
+        <option value="Combo TV 250k">Bahari Combo TV 250k</option>
+        <option value="Gamers 315k">Bahari Gamers 315k</option>
+        <option value="Fun 510k">Bahari Fun 510k</option>
+    </select>
+    
+    <div class="copy-group">
+        <span class="copy-label">KIRIM DATA KE :</span>
+        <div class="button-wrapper">
+            <button class="btn-main btn-blue" onclick="copyFullData()">
+                <i class="fa-regular fa-clipboard"></i> KLIPBOARD
+            </button>
+            <button class="btn-main btn-whatsapp" onclick="sendToWhatsApp()">
+                <i class="fa-brands fa-whatsapp"></i> WHATSAPP
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="copyright-card">
+    <p class="copyright-text">by : Ures-ures Duniawi @ 2026</p>
+</div>
+
+<script>
+    // --- GANTI DENGAN URL WEB APP GOOGLE APPS SCRIPT ANDA ---
+    const SCRIPT_URL = "URL_WEB_APP_ANDA_DI_SINI"; 
+
+    function toggleTheme() {
+        const body = document.body;
+        const icon = document.getElementById('themeIcon');
+        body.classList.toggle('dark-mode');
+        icon.classList.toggle('fa-sun');
+        icon.classList.toggle('fa-moon');
+    }
+
+    function showToast(message) {
+        const toast = document.getElementById('toast');
+        toast.innerText = message;
+        toast.style.display = 'block';
+        setTimeout(() => { toast.style.display = 'none'; }, 2000);
+    }
+
+    // Fungsi Upload Otomatis saat file dipilih
+    async function handleFileUpload(event) {
+        const file = event.target.files[0];
+        const label = document.getElementById('label-upload');
+        const driveInput = document.getElementById('drive-link');
+        const nama = document.getElementById('nama').value || "Tanpa_Nama";
+
+        if (!file) return;
+
+        // Ubah tampilan saat upload
+        label.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sedang Upload...';
+        label.style.backgroundColor = "#666";
+        showToast("Mengunggah foto ke Drive...");
+
+        const reader = new FileReader();
+        reader.onload = async () => {
+            const base64 = reader.result.split(",")[1];
+            const data = {
+                base64: base64,
+                fileName: `Survey_${nama}_${Date.now()}.jpg`,
+                mimeType: file.type
+            };
+
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: "POST",
+                    body: JSON.stringify(data)
+                });
+                const link = await response.text();
+                
+                // Masukkan link ke input teks
+                driveInput.value = link;
+                
+                // Kembalikan tampilan tombol
+                label.innerHTML = '<i class="fa-solid fa-check"></i> BERHASIL TERUPLOAD';
+                label.style.backgroundColor = "#28a745";
+                showToast("Foto berhasil diunggah!");
+            } catch (err) {
+                label.innerHTML = '<i class="fa-solid fa-xmark"></i> GAGAL UPLOAD';
+                label.style.backgroundColor = "#dc3545";
+                showToast("Gagal upload ke Drive!");
+            }
+        };
+        reader.readAsDataURL(file);
+    }
+
+    async function handleMapLogic() {
+        try {
+            const text = await navigator.clipboard.readText();
+            const coordRegex = /(-?\d+\.\d+ Kath),\s*(-?\d+\.\d+)/; // Support manual paste coordinates
+            const match = text.match(/(-?\d+\.\d+),\s*(-?\d+\.\d+)/);
+            if (match) {
+                const finalUrl = `https://www.google.com/maps?q=${match[1]},${match[2]}`;
+                document.getElementById('map-link').value = finalUrl;
+                showToast("Koordinat Diterima!");
+            } else { showToast("Format koordinat salah!"); }
+        } catch (err) { showToast("Gagal akses clipboard!"); }
+    }
+
+    function getFinalText() {
+        const nama = document.getElementById('nama').value;
+        const maps = document.getElementById('map-link').value;
+        const drive = document.getElementById('drive-link').value;
+
+        if (!nama || !maps) {
+            showToast("Nama & Maps wajib diisi!");
+            return null;
+        }
+
+        return `*DATA CALON PELANGGAN*\n\n` +
+               `*Nama:* ${nama}\n` +
+               `*Alamat:* ${document.getElementById('alamat').value}\n` +
+               `*WhatsApp:* ${document.getElementById('whatsapp_pelanggan').value}\n` +
+               `*Maps:* ${maps}\n` +
+               `*Paket:* ${document.getElementById('paket').value}\n` +
+               `*Link Foto:* ${drive || "Tidak ada foto"}`;
+    }
+
+    function copyFullData() {
+        const teks = getFinalText();
+        if (teks) {
+            navigator.clipboard.writeText(teks);
+            showToast("Berhasil Salin Data!");
+        }
+    }
+
+    function sendToWhatsApp() {
+        const teks = getFinalText();
+        if (teks) {
+            window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(teks)}`, '_blank');
+        }
+    }
+</script>
+
+</body>
+</html>
