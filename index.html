@@ -11,6 +11,7 @@
             --bg-color: #f0f2f5;
             --accent-color: #28a745;
             --danger-color: #dc3545;
+            --wa-color: #25d366; /* Warna khas WhatsApp */
         }
 
         body { 
@@ -93,8 +94,13 @@
             width: 100%; padding: 16px; background-color: var(--primary-color); 
             color: white; border: none; border-radius: 10px; 
             font-weight: bold; cursor: pointer; font-size: 17px; 
-            margin-top: 25px; box-shadow: 0 4px 10px rgba(52, 183, 241, 0.3);
+            margin-top: 15px; box-shadow: 0 4px 10px rgba(52, 183, 241, 0.3);
             transition: 0.3s;
+        }
+
+        .btn-whatsapp {
+            background-color: var(--wa-color);
+            box-shadow: 0 4px 10px rgba(37, 211, 102, 0.3);
         }
         
         .success-flash { background-color: #28a745 !important; }
@@ -128,7 +134,8 @@
         <option value="Fun 510k">Fun 510k</option>
     </select>
     
-    <button id="btnAction" class="btn-main" onclick="copyFullData()">SALIN SEMUA DATA</button>
+    <button id="btnAction" class="btn-main" onclick="copyFullData()">SALIN KE KLIPBOARD</button>
+    <button id="btnWA" class="btn-main btn-whatsapp" onclick="sendToWhatsApp()">SALIN KE WHATSAPP</button>
 </div>
 
 <script>
@@ -158,14 +165,13 @@
                 const finalUrl = `https://www.google.com/maps?q=${lat},${lng}`;
                 
                 inputMap.value = finalUrl;
+                // Auto copy URL yang baru dibuat
                 await navigator.clipboard.writeText(finalUrl);
 
-                // Perubahan tombol
                 const originalText = "PASTE KOORDINAT";
                 btn.innerText = "URL BERHASIL DIBUAT ✅";
                 btn.style.backgroundColor = "#218838";
                 
-                // Munculkan notifikasi mengambang
                 showToast("URL Maps berhasil disalin!");
 
                 setTimeout(() => { 
@@ -181,7 +187,8 @@
         }
     }
 
-    function copyFullData() {
+    // Fungsi pusat untuk mengambil data teks
+    function getFormattedData() {
         const nama = document.getElementById('nama').value;
         const alamat = document.getElementById('alamat').value;
         const waPelanggan = document.getElementById('whatsapp_pelanggan').value;
@@ -190,24 +197,42 @@
 
         if (!nama || !mapLink) {
             showToast("Nama & Maps wajib diisi!", true);
-            return;
+            return null;
         }
 
-        const teksLengkap = `*DATA CALON PELANGGAN*\n\n` +
-                          `*Nama:* ${nama}\n` +
-                          `*Alamat:* ${alamat}\n` +
-                          `*Nomor WA:* ${waPelanggan}\n` +
-                          `*Maps:* ${mapLink}\n` +
-                          `*Paket:* ${paket}`;
+        return `*DATA CALON PELANGGAN*\n\n` +
+               `*Nama:* ${nama}\n` +
+               `*Alamat:* ${alamat}\n` +
+               `*Nomor WA:* ${waPelanggan}\n` +
+               `*Maps:* ${mapLink}\n` +
+               `*Paket:* ${paket}`;
+    }
+
+    function copyFullData() {
+        const teksLengkap = getFormattedData();
+        if (!teksLengkap) return;
 
         navigator.clipboard.writeText(teksLengkap).then(() => {
             const btn = document.getElementById('btnAction');
             btn.classList.add('success-flash');
-            showToast("Semua data berhasil disalin!");
+            showToast("Data disalin ke klipboard!");
             
             setTimeout(() => {
                 btn.classList.remove('success-flash');
             }, 2000);
+        });
+    }
+
+    function sendToWhatsApp() {
+        const teksLengkap = getFormattedData();
+        if (!teksLengkap) return;
+
+        // Salin ke klipboard dulu agar pengguna punya cadangan
+        navigator.clipboard.writeText(teksLengkap).then(() => {
+            // Encode teks untuk URL
+            const encodedText = encodeURIComponent(teksLengkap);
+            // Membuka WhatsApp (api.whatsapp.com bekerja baik di mobile maupun web)
+            window.open(`https://api.whatsapp.com/send?text=${encodedText}`, '_blank');
         });
     }
 </script>
