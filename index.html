@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Survey Calon Pelanggan WiFi</title>
+    <title>Survey WiFi - Auto Generate Link</title>
     <style>
         :root {
             --primary-color: #34b7f1; 
             --secondary-color: #0d95e8;
             --bg-color: #f0f2f5;
             --accent-color: #28a745;
+            --danger-color: #dc3545;
         }
 
         body { 
@@ -19,6 +20,7 @@
             max-width: 500px; 
             margin: auto; 
             background-color: var(--bg-color); 
+            position: relative;
         }
 
         .card { 
@@ -26,6 +28,7 @@
             padding: 20px; 
             border-radius: 15px; 
             box-shadow: 0 4px 15px rgba(0,0,0,0.1); 
+            position: relative;
         }
 
         h2 { color: #333; text-align: center; margin-bottom: 20px; font-size: 1.5rem; }
@@ -66,10 +69,26 @@
             min-width: 140px;
         }
 
-        .btn-process:hover { background-color: #218838; }
+        /* Notifikasi Mengambang */
+        #toast {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.85);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: bold;
+            text-align: center;
+            z-index: 1000;
+            display: none;
+            width: 80%;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            pointer-events: none;
+        }
 
-        .hint { font-size: 0.75rem; color: #777; margin-top: 5px; font-style: italic; }
-        
         .btn-main { 
             width: 100%; padding: 16px; background-color: var(--primary-color); 
             color: white; border: none; border-radius: 10px; 
@@ -78,14 +97,15 @@
             transition: 0.3s;
         }
         
-        .btn-main:hover { background-color: var(--secondary-color); }
         .success-flash { background-color: #28a745 !important; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h2>Data Calon Pelanggan</h2>
+    <div id="toast"></div>
+
+    <h2>Data Pemasangan</h2>
     
     <input type="text" id="nama" placeholder="Nama Pelanggan">
     <textarea id="alamat" rows="2" placeholder="Alamat Lengkap / Patokan"></textarea>
@@ -96,7 +116,6 @@
         <input type="text" id="map-link" placeholder="URL otomatis muncul..." readonly>
         <button type="button" id="btnPasteCopy" class="btn-process" onclick="handleMapLogic()">PASTE KOORDINAT</button>
     </div>
-    <p class="hint">*Salin koordinat dari Maps, lalu klik tombol hijau.</p>
     
     <label>Pilihan Paket</label>
     <select id="paket">
@@ -113,47 +132,52 @@
 </div>
 
 <script>
+    function showToast(message, isError = false) {
+        const toast = document.getElementById('toast');
+        toast.innerText = message;
+        toast.style.display = 'block';
+        toast.style.backgroundColor = isError ? 'rgba(220, 53, 69, 0.95)' : 'rgba(0, 0, 0, 0.85)';
+        
+        setTimeout(() => {
+            toast.style.display = 'none';
+        }, 2000);
+    }
+
     async function handleMapLogic() {
         const btn = document.getElementById('btnPasteCopy');
         const inputMap = document.getElementById('map-link');
 
         try {
-            // 1. Ambil teks dari clipboard
             const text = await navigator.clipboard.readText();
-            
-            // Regex untuk mendeteksi koordinat murni: angka.angka, angka.angka
             const coordRegex = /(-?\d+\.\d+),\s*(-?\d+\.\d+)/;
             const match = text.match(coordRegex);
 
             if (match) {
-                // 2. Jika valid koordinat, buat link
                 const lat = match[1];
                 const lng = match[2];
                 const finalUrl = `https://www.google.com/maps?q=${lat},${lng}`;
                 
-                // 3. Masukkan ke input UI
                 inputMap.value = finalUrl;
-
-                // 4. Salin kembali link hasil ke clipboard
                 await navigator.clipboard.writeText(finalUrl);
 
-                // 5. Perubahan teks tombol sementara
+                // Perubahan tombol
                 const originalText = "PASTE KOORDINAT";
                 btn.innerText = "URL BERHASIL DIBUAT ✅";
                 btn.style.backgroundColor = "#218838";
                 
+                // Munculkan notifikasi mengambang
+                showToast("URL Maps berhasil disalin!");
+
                 setTimeout(() => { 
                     btn.innerText = originalText; 
-                    btn.style.backgroundColor = ""; // Kembali ke warna css awal
+                    btn.style.backgroundColor = ""; 
                 }, 2000);
 
             } else {
-                // Jika yang dipaste bukan koordinat
-                alert("Peringatan: Teks yang Anda salin bukan format koordinat Google Maps (contoh: -6.123, 106.123). Silakan salin koordinat yang benar.");
+                showToast("Bukan format koordinat yang valid!", true);
             }
-
         } catch (err) {
-            alert("Gagal mengakses clipboard. Pastikan izin browser aktif.");
+            showToast("Izin clipboard ditolak!", true);
         }
     }
 
@@ -165,7 +189,7 @@
         const paket = document.getElementById('paket').value;
 
         if (!nama || !mapLink) {
-            alert("Nama dan Link Maps wajib diisi!");
+            showToast("Nama & Maps wajib diisi!", true);
             return;
         }
 
@@ -178,12 +202,10 @@
 
         navigator.clipboard.writeText(teksLengkap).then(() => {
             const btn = document.getElementById('btnAction');
-            const originalText = btn.innerText;
-            btn.innerText = "✅ BERHASIL DISALIN!";
             btn.classList.add('success-flash');
+            showToast("Semua data berhasil disalin!");
             
             setTimeout(() => {
-                btn.innerText = originalText;
                 btn.classList.remove('success-flash');
             }, 2000);
         });
