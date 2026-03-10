@@ -210,22 +210,35 @@
     }
 
     async function handleMapLogic() {
-        const inputMap = document.getElementById('map-link');
-        try {
-            const text = await navigator.clipboard.readText();
-            const coordRegex = /(-?\d+\.\d+),\s*(-?\d+\.\d+)/;
-            const match = text.match(coordRegex);
-            if (match) {
-                const finalUrl = `https://www.google.com/maps?q=${match[1]},${match[2]}`;
-                inputMap.value = finalUrl;
-                showToast("Link Maps Berhasil Dibuat!");
-            } else {
-                showToast("Koordinat tidak ditemukan!");
-            }
-        } catch (err) {
-            showToast("Gagal akses clipboard!");
+    const inputMap = document.getElementById('map-link');
+    try {
+        // Membaca teks dari clipboard
+        const text = await navigator.clipboard.readText();
+        
+        // Regex untuk menangkap koordinat (latitude, longitude)
+        const coordRegex = /(-?\d+\.\d+),\s*(-?\d+\.\d+)/;
+        const match = text.match(coordRegex);
+
+        if (match) {
+            // Membuat format link Google Maps
+            const finalUrl = `https://www.google.com/maps?q=${match[1]},${match[2]}`;
+            
+            // 1. Masukkan ke input field
+            inputMap.value = finalUrl;
+            
+            // 2. OTOMATIS SALIN KE CLIPBOARD
+            await navigator.clipboard.writeText(finalUrl);
+            
+            showToast("Link Berhasil Dibuat & Tersalin!");
+        } else {
+            showToast("Koordinat tidak ditemukan di Clipboard!");
         }
+    } catch (err) {
+        console.error(err);
+        showToast("Gagal akses clipboard! Pastikan izin diberikan.");
     }
+}
+
 
     function getFormattedData() {
         const nama = document.getElementById('nama').value;
