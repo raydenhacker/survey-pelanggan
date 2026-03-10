@@ -213,7 +213,6 @@
     async function handleMapLogic() {
     const inputMap = document.getElementById('map-link');
     try {
-        // Membaca teks dari clipboard
         const text = await navigator.clipboard.readText();
         
         // Regex untuk menangkap koordinat (latitude, longitude)
@@ -221,25 +220,27 @@
         const match = text.match(coordRegex);
 
         if (match) {
-            // Membuat format link Google Maps
-            const finalUrl = `https://www.google.com/maps?q=${match[1]},${match[2]}`;
+            // Mengubah string menjadi angka dan membatasi 4 angka di belakang koma
+            const lat = parseFloat(match[1]).toFixed(5);
+            const lng = parseFloat(match[2]).toFixed(5);
             
-            // 1. Masukkan ke input field
-            inputMap.value = finalUrl;
+            // Membuat format link pendek
+            const shortUrl = `https://maps.google.com/?q=${lat},${lng}`;
             
-            // 2. OTOMATIS SALIN KE CLIPBOARD
-            await navigator.clipboard.writeText(finalUrl);
+            // Update input field
+            inputMap.value = shortUrl;
             
-            showToast("Link Berhasil Dibuat & Tersalin!");
+            // Otomatis salin link yang sudah rapi ke clipboard
+            await navigator.clipboard.writeText(shortUrl);
+            
+            showToast("Link 4 Desimal Tersalin!");
         } else {
-            showToast("Koordinat tidak ditemukan di Clipboard!");
+            showToast("Koordinat tidak ditemukan!");
         }
     } catch (err) {
-        console.error(err);
-        showToast("Gagal akses clipboard! Pastikan izin diberikan.");
+        showToast("Gagal akses clipboard!");
     }
 }
-
 
     function getFormattedData() {
         const nama = document.getElementById('nama').value;
