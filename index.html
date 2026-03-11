@@ -147,7 +147,7 @@
     
     <input type="text" id="nama" placeholder="Nama Pelanggan">
 
-<input type="tel" id="whatsapp_pelanggan" placeholder="Nomor WhatsApp">
+	<input type="tel" id="whatsapp_pelanggan" placeholder="Nomor WhatsApp">
 
     <select id="paket">
         <option value="">-- Pilih Paket Internet --</option>
@@ -211,38 +211,27 @@
     }
 
     async function handleMapLogic() {
-    const inputMap = document.getElementById('map-link');
-    try {
-        const text = await navigator.clipboard.readText();
-        
-        // Regex untuk menangkap koordinat (latitude, longitude)
-        const coordRegex = /(-?\d+\.\d+),\s*(-?\d+\.\d+)/;
-        const match = text.match(coordRegex);
+    	const inputMap = document.getElementById('map-link');
+    	try {
+        	const text = await navigator.clipboard.readText();
+       		const coordRegex = /(-?\d+\.\d+),\s*(-?\d+\.\d+)/;
+        	const match = text.match(coordRegex);
+        	if (match) {
+            	const lat = parseFloat(match[1]).toFixed(5);
+            	const lng = parseFloat(match[2]).toFixed(5);
+            	const shortUrl = `https://maps.google.com/?q=${lat},${lng}`;
+            	inputMap.value = shortUrl;
+				await navigator.clipboard.writeText(shortUrl);
+            	showToast("Link Maps Tersalin!");
+        	} else {
+            	showToast("Koordinat tidak ditemukan!");
+        	}
+    	} catch (err) {
+        	showToast("Gagal akses clipboard!");
+    	}
+	}
 
-        if (match) {
-            // Mengubah string menjadi angka dan membatasi 4 angka di belakang koma
-            const lat = parseFloat(match[1]).toFixed(5);
-            const lng = parseFloat(match[2]).toFixed(5);
-            
-            // Membuat format link pendek
-            const shortUrl = `https://maps.google.com/?q=${lat},${lng}`;
-            
-            // Update input field
-            inputMap.value = shortUrl;
-            
-            // Otomatis salin link yang sudah rapi ke clipboard
-            await navigator.clipboard.writeText(shortUrl);
-            
-            showToast("Link 4 Desimal Tersalin!");
-        } else {
-            showToast("Koordinat tidak ditemukan!");
-        }
-    } catch (err) {
-        showToast("Gagal akses clipboard!");
-    }
-}
-
-    function getFormattedData() {
+	function getFormattedData() {
         const nama = document.getElementById('nama').value;
         const alamat = document.getElementById('alamat').value;
         const wa = document.getElementById('whatsapp_pelanggan').value;
@@ -255,25 +244,25 @@
         }
 
         return `*DATA CALON PELANGGAN*\n\n` +
-               `*Nama:* ${nama}\n` +
-																`*WhatsApp:* ${wa}\n` +
-																`*Paket:* ${paket}` +
-																`*Alamat:* ${alamat}\n` +
-																`*Maps:* ${maps}`;
+               	`*Nama:* ${nama}\n` +
+				`*WhatsApp:* ${wa}\n` +
+				`*Paket:* ${paket}\n` +
+				`*Alamat:* ${alamat}\n` +
+				`*Maps:* ${maps}`;
     }
 
     function copyFullData() {
-        const teks = getFormattedData();
+		const teks = getFormattedData();
+		if (teks) {
+			navigator.clipboard.writeText(teks);
+			showToast("Berhasil Salin ke Klipboard!");
+		}
+	}
+	
+	function sendToWhatsApp() {
+  		const teks = getFormattedData();
         if (teks) {
-            navigator.clipboard.writeText(teks);
-            showToast("Berhasil Salin ke Klipboard!");
-        }
-    }
-
-    function sendToWhatsApp() {
-        const teks = getFormattedData();
-        if (teks) {
-            window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(teks)}`, '_blank');
+        	window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(teks)}`, '_blank');
         }
     }
 </script>
