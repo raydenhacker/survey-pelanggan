@@ -2,8 +2,7 @@ const CACHE_NAME = 'qr-pwa-v2';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
-  './manifest.json',
-  'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js'
+  './manifest.json'
 ];
 
 // Cache semua resource saat pertama kali install
