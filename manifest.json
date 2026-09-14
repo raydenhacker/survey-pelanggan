@@ -1,7 +1,7 @@
 {
-  "name": "Aplikasi Web PWA",
-  "short_name": "Web PWA",
-  "description": "Aplikasi Web Standalone PWA",
+  "name": "Survey Pelanngan Wifi",
+  "short_name": "Survey Wifi",
+  "description": "Aplikasi web survey pelanggan Bahari Media.Net",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
