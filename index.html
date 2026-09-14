@@ -4,6 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Survey Pelanggan Wifi</title>
+	<!-- PWA Manifest & Colors -->
+  <link rel="manifest" href="./manifest.json">
+  <meta name="theme-color" content="#2563eb">
+
+  <!-- Pengaturan iOS / Safari Support -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Web PWA">
+  <link rel="apple-touch-icon" href="https://via.placeholder.com/192/2563eb/ffffff?text=PWA">
+
+  <!-- Registrasi Service Worker -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then((reg) => console.log('Service Worker Registered!', reg))
+          .catch((err) => console.error('Service Worker Registration Failed!', err));
+      });
+    }
+  </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
         :root {
